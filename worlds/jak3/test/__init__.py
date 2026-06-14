@@ -1,0 +1,1 @@
+# Test module for Jak 3 Archipelago integration
