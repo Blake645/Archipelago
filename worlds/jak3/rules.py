@@ -26,7 +26,7 @@ def spargus_to_port(state, player) -> bool:
 
 
 def port_to_metal_head_section(state, player) -> bool:
-    return state.has("Gate Pass to Spargus", "Air Train Pass", "Pass to Metal Head Section", player)
+    return state.has("Gate Pass to Spargus", "Air Train Pass", "Pass to Metal Head Section", "Dark Jak", "Dark Strike",  player)
 
 
 def port_to_inda(state, player) -> bool:
