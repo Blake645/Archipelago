@@ -12,7 +12,19 @@ def spargus_to_desert(state, player) -> bool:
             or state.has("Desert Screamer", player)
         )
     )
-
+def car_with_guns(state, player) -> bool:
+    return (
+        state.has("Gate Pass to Spargus", player)
+        and (
+            state.has("Sand Shark", player)
+            or state.has("Gila Stomper", player)
+            or state.has("Dune Hopper", player)
+            or state.has("Slam Dozer", player)
+            or state.has("Heat Seeker", player)
+            or state.has("Dust Demon", player)
+            or state.has("Desert Screamer", player)
+        )
+    )
 def spargus_to_monk_temple(state, player) -> bool:
     return state.has_all("Gate Pass to Spargus", "Dune Hopper", player)
 

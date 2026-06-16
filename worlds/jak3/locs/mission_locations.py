@@ -1,6 +1,7 @@
 from typing import Callable, Optional
 from worlds.jak3.rules import (spargus_to_desert, spargus_to_monk_temple, spargus_to_nest, spargus_to_port, port_to_metal_head_section,
-port_to_inda, port_to_indb, port_to_hq, port_to_ruins, any_gun)
+port_to_inda, port_to_indb, port_to_hq, port_to_ruins, any_gun, car_with_guns)
+from worlds.stardew_valley.stardew_rule import state
 
 
 class Jak3MissionData:
@@ -38,244 +39,228 @@ class Jak3SideMissionData:
 # Names for Missions are taken directly from the game
 main_mission_table = {
     # Act 1
-    1: Jak3MissionData(mission_id=1, task_id=10, name="Escape From Prison"),
-    2: Jak3MissionData(mission_id=2, task_id=11, name="Protect Kor and Kid"),
-    3: Jak3MissionData(mission_id=3, task_id=12, name="Retrieve Banner from Dead Town"),
-    4: Jak3MissionData(mission_id=4, task_id=13, name="Find Pumping Station Valve"),
-    5: Jak3MissionData(mission_id=5, task_id=14, name="Blow up Ammo at Fortress"),
-    6: Jak3MissionData(mission_id=6, task_id=15, name="Make delivery to Hip Hog Saloon",
+    1: Jak3MissionData(mission_id=1, task_id=10, name="Complete arena training course"),
+    2: Jak3MissionData(mission_id=2, task_id=11, name="Earn 1st war amulet"),
+    3: Jak3MissionData(mission_id=3, task_id=12, name="Catch kanga-rats"),
+    4: Jak3MissionData(mission_id=4, task_id=13, name="Unlock satellite"),
+    5: Jak3MissionData(mission_id=5, task_id=14, name="Learn to Drive Vehicle",
                        rule=lambda state, player:
-                       state.has("Red Security Pass", player)
-                       or state.has_all(("Green Security Pass", "Yellow Security Pass"), player)),
-    7: Jak3MissionData(mission_id=7, task_id=16, name="Beat Scatter Gun Course",
+                       state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player)),
+    6: Jak3MissionData(mission_id=6, task_id=15, name="Beat Kleiver in desert race",
                        rule=lambda state, player:
-                       slums_to_port(state, player)
-                       and state.has("Scatter Gun", player)),
-    8: Jak3MissionData(mission_id=8, task_id=17, name="Protect Sig at Pumping Station",
+                       state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player)),
+    7: Jak3MissionData(mission_id=7, task_id=16, name="Race for artifacts",
                        rule=lambda state, player:
-                       slums_to_port(state, player)
-                       and any_gun(state, player)),
-    9: Jak3MissionData(mission_id=9, task_id=18, name="Destroy Turrets in Sewers",
+                       state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player)),
+    8: Jak3MissionData(mission_id=8, task_id=17, name="Beat monks in leaper race"),
+    9: Jak3MissionData(mission_id=9, task_id=18, name="Destroy metal head beasts",
                        rule=lambda state, player:
-                       slums_to_port(state, player)
-                       and any_gun(state, player)),
-    10: Jak3MissionData(mission_id=10, task_id=19, name="Rescue Vin at Strip Mine",
+                       state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
+    10: Jak3MissionData(mission_id=10, task_id=19, name="Earn 2nd war amulet"),
+    11: Jak3MissionData(mission_id=11, task_id=20, name="Corral wild leapers",
                         rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and any_gun(state, player)),
-    11: Jak3MissionData(mission_id=11, task_id=20, name="Find Pumping Station Patrol",
-                        rule=lambda state, player: any_gun(state, player)),
-    12: Jak3MissionData(mission_id=12, task_id=21, name="Find Lens in Mountain Temple",
+                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
+    12: Jak3MissionData(mission_id=12, task_id=21, name="Rescue wastelanders",
                         rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and state.has_any(("Scatter Gun", "Blaster", "Vulcan Fury"), player)),
-    13: Jak3MissionData(mission_id=13, task_id=22, name="Find Gear in Mountain Temple",
+                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
+    13: Jak3MissionData(mission_id=13, task_id=22, name="Beat turret challenge",
                         rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and state.has_any(("Scatter Gun", "Blaster", "Vulcan Fury"), player)),
-    14: Jak3MissionData(mission_id=14, task_id=23, name="Find Shard in Mountain Temple",
-                        rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and state.has_any(("Scatter Gun", "Blaster", "Vulcan Fury"), player)),
-    15: Jak3MissionData(mission_id=15, task_id=24, name="Beat Time to Race Garage",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and (state.has_all(("Red Security Pass", "Green Security Pass"), player)
-                             or state.has("Yellow Security Pass", player))),
-    16: Jak3MissionData(mission_id=16, task_id=25, name="Win JET-Board Stadium Challenge",
-                        rule=lambda state, player:
-                        slums_to_stadium(state, player)),
-    17: Jak3MissionData(mission_id=17, task_id=26, name="Collect Money for Krew",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)),
-    18: Jak3MissionData(mission_id=18, task_id=27, name="Beat Blaster Gun Course",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has("Blaster", player)),
-    19: Jak3MissionData(mission_id=19, task_id=28, name="Destroy Eggs at Drill Platform",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and any_gun(state, player)
-                        and state.has("Gunpod", player)),
-    20: Jak3MissionData(mission_id=20, task_id=29, name="Turn on 5 Power Switches",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and ((any_gun(state, player)
-                              and state.has("Red Security Pass", player))
-                             or (any_gun(state, player)
-                                 and state.has_all(("Green Security Pass", "Yellow Security Pass"), player)))),
-    21: Jak3MissionData(mission_id=21, task_id=30, name="Ride Elevator up to Palace",
-                        rule=lambda state, player:
-                        any_gun(state, player)
-                        and slums_to_stadium(state, player)),
-    22: Jak3MissionData(mission_id=22, task_id=31, name="Defeat Baron at Palace",
-                        rule=lambda state, player:
-                        any_gun(state, player)
-                        and slums_to_stadium(state, player)),
-    # Act 2 (Palace Baron Fight Complete)
-    23: Jak3MissionData(mission_id=23, task_id=32, name="Shuttle Underground Fighters"),
-    24: Jak3MissionData(mission_id=24, task_id=33, name="Protect Site in Dead Town",
+                        state.has("Gun Turret", player)),
+    14: Jak3MissionData(mission_id=14, task_id=23, name="Defeat marauders in arena",
                         rule=lambda state, player:
                         any_gun(state, player)),
-    25: Jak3MissionData(mission_id=25, task_id=34, name="Catch Scouts in Haven Forest",
+    15: Jak3MissionData(mission_id=15, task_id=24, name="Destroy eggs in nest",
                         rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and state.has("JET-Board", player)),
-    26: Jak3MissionData(mission_id=26, task_id=35, name="Escort Kid to Power Station",
+                        spargus_to_nest(state, player)),
+    16: Jak3MissionData(mission_id=16, task_id=25, name="Climb Monk Temple tower",
                         rule=lambda state, player:
-                        state.has("Red Security Pass", player)),
-    27: Jak3MissionData(mission_id=27, task_id=36, name="Destroy Equipment at Dig",
+                        spargus_to_monk_temple(state, player)),
+    17: Jak3MissionData(mission_id=17, task_id=26, name="Glide to volcano",
                         rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has("JET-Board", player)),
-    28: Jak3MissionData(mission_id=28, task_id=37, name="Blow up Strip Mine Eco Wells",
+                        spargus_to_monk_temple(state, player)
+                        and state.has_any("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer")),
+    18: Jak3MissionData(mission_id=18, task_id=27, name="Find satellite in volcano",
                         rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has("JET-Board", player)),
-    29: Jak3MissionData(mission_id=29, task_id=38, name="Destroy Ship at Drill Platform",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has("Gunpod", player)),
-    30: Jak3MissionData(mission_id=30, task_id=39, name="Destroy Cargo in Port",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has("JET-Board", player)),
-    31: Jak3MissionData(mission_id=31, task_id=40, name="Rescue Lurkers for Brutter #1",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and any_gun(state, player)
-                        and state.has("Yellow Security Pass", player)),
-    32: Jak3MissionData(mission_id=32, task_id=41, name="Drain Sewers to find Statue",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has("JET-Board", player)),
-    33: Jak3MissionData(mission_id=33, task_id=42, name="Hunt Haven Forest Metal Heads",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and any_gun(state, player)
-                        and state.has("Yellow Security Pass", player)),
-    34: Jak3MissionData(mission_id=34, task_id=43, name="Intercept Tanker",
-                        rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and (any_gun(state, player)
-                             or state.has("Dark Jak", player))),
-    35: Jak3MissionData(mission_id=35, task_id=44, name="Win Class 3 Race at Stadium",
-                        rule=lambda state, player:
-                        slums_to_stadium(state, player)),
-    36: Jak3MissionData(mission_id=36, task_id=45, name="Get Seal Piece at Water Slums",
-                        rule=lambda state, player:
-                        any_gun(state, player)
-                        or state.has("JET-Board", player)),
-    37: Jak3MissionData(mission_id=37, task_id=46, name="Get Seal Piece at Dig",
-                        rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and any_gun(state, player)
-                        and state.has("JET-Board", player)),
-    38: Jak3MissionData(mission_id=38, task_id=47, name="Destroy 5 HellCat Cruisers",
-                        rule=lambda state, player:
-                        state.has("Red Security Pass", player)
+                        spargus_to_monk_temple(state, player)
                         and any_gun(state, player)),
-    39: Jak3MissionData(mission_id=39, task_id=48, name="Beat Onin Game",
+    19: Jak3MissionData(mission_id=19, task_id=28, name="Find oracle in Monk Temple",
                         rule=lambda state, player:
-                        slums_to_market(state, player)),
-    40: Jak3MissionData(mission_id=40, task_id=49, name="Use items in No Man's Canyon",
+                        spargus_to_monk_temple(state, player)
+                        and state.has_all("Wave Concussor", "Dark Invisibility", player)),
+    20: Jak3MissionData(mission_id=20, task_id=29, name="Defend Ashelin at oasis",
                         rule=lambda state, player:
-                        slums_to_market(state, player)
+                        spargus_to_desert(state, player)
+                        and any_gun(state, player)),
+    21: Jak3MissionData(mission_id=21, task_id=30, name="Complete Monk Temple tests",
+                        rule=lambda state, player:
+                        spargus_to_monk_temple(state, player)
+                        and state.has_all("Seal of Mar", "JET-Board", "Light Jak" "Light Flash Freeze", player)),
+    22: Jak3MissionData(mission_id=22, task_id=31, name="Travel through catacomb subrails",
+                        rule=lambda state, player:
+                        spargus_to_monk_temple(state, player)
+                        and state.has_all("Seal of Mar", "JET-Board", "Light Jak" "Light Flash Freeze", player)),
+    23: Jak3MissionData(mission_id=23, task_id=32, name="Explore eco mine",
+                        rule=lambda state, player:
+                        spargus_to_monk_temple(state, player)
                         and state.has("JET-Board", player)
-                        and state.has_all(("Seal Piece #1", "Seal Piece #2", "Seal Piece #3"), player)),
-    41: Jak3MissionData(mission_id=41, task_id=50, name="Pass the first Test of Manhood",
+                        and state.has_any("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer")),
+    24: Jak3MissionData(mission_id=24, task_id=33, name="Escort bomb train",
                         rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and state.has_all(("Lens", "Gear", "Shard"), player)),
-    42: Jak3MissionData(mission_id=42, task_id=51, name="Pass the second Test of Manhood",
+                        spargus_to_monk_temple(state, player)
+                        and state.has("JET-Board", player)
+                        and state.has_any("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer")),
+    25: Jak3MissionData(mission_id=25, task_id=34, name="	Defeat Veger's Precursor robot",
                         rule=lambda state, player:
-                        slums_to_market(state, player)
-                        and state.has_all(("Lens", "Gear", "Shard"), player)),
-    43: Jak3MissionData(mission_id=43, task_id=52, name="Defeat Baron in Mar's Tomb",
+                        spargus_to_monk_temple(state, player)
+                        and state.has("JET-Board", player)
+                        and state.has_any("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer")),
+    # Act 2 (Robot Fight Complete)
+    26: Jak3MissionData(mission_id=26, task_id=35, name="Reach Port via sewer",
                         rule=lambda state, player:
-                        slums_to_market(state, player)
+                        spargus_to_port(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Lens", "Gear", "Shard"), player)),
-    # Act 3 (Tomb Baron Fight Complete)
-    44: Jak3MissionData(mission_id=44, task_id=53, name="Rescue Friends in Fortress",
-                        rule=lambda state, player:
-                        any_gun(state, player)
                         and state.has("JET-Board", player)),
-    45: Jak3MissionData(mission_id=45, task_id=54, name="Escort men through Sewers",
+    27: Jak3MissionData(mission_id=27, task_id=37, name="Destroy incoming blast bots",
                         rule=lambda state, player:
-                        slums_to_port(state, player)
+                        spargus_to_port(state, player)
                         and any_gun(state, player)),
-    46: Jak3MissionData(mission_id=46, task_id=55, name="Win Class 2 Race at Stadium",
+    28: Jak3MissionData(mission_id=28, task_id=38, name="Destroy barrier with missile",
                         rule=lambda state, player:
-                        slums_to_stadium(state, player)),
-    47: Jak3MissionData(mission_id=47, task_id=56, name="Protect Hideout from Bombots",
+                        spargus_to_port(state, player)),
+    29: Jak3MissionData(mission_id=29, task_id=39, name="Beat gun course 1",
                         rule=lambda state, player:
-                        state.has_all(("Red Security Pass", "Vulcan Fury"), player)),
-    48: Jak3MissionData(mission_id=48, task_id=57, name="Beat Erol in Race Challenge",
+                        spargus_to_port(state, player)
+                        and state.has_any("Blaster", "Beam Reflexor", player)),
+    30: Jak3MissionData(mission_id=30, task_id=40, name="Destroy sniper cannons",
                         rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has("Yellow Security Pass", player)),
-    49: Jak3MissionData(mission_id=49, task_id=58, name="Destroy Eggs in Strip Mine",
+                        port_to_inda(state, player)),
+    31: Jak3MissionData(mission_id=31, task_id=41, name="Reach Metal Head area via sewer",
+                        rule=lambda state, player:
+                        port_to_inda(state, player)
+                        and any_gun(state, player)
+                        and state.has("JET-Board", player)),
+    32: Jak3MissionData(mission_id=32, task_id=42, name="Destroy dark eco tanks",
+                        rule=lambda state, player:
+                        port_to_metal_head_section(state, player)
+                        and state.has("JET-Board", player)),
+    33: Jak3MissionData(mission_id=33, task_id=43, name="Kill dark plants in forest",
+                        rule=lambda state, player:
+                        port_to_metal_head_section(state, player)
+                        and state.has("JET-Board", player)),
+    34: Jak3MissionData(mission_id=34, task_id=44, name="Destroy eco grid with Jinx",
+                        rule=lambda state, player:
+                        port_to_metal_head_section(state, player)
+                        and any_gun(state, player)),
+    35: Jak3MissionData(mission_id=35, task_id=45, name="Hijack eco vehicle",
+                        rule=lambda state, player:
+                        port_to_indb(state, player)),
+    36: Jak3MissionData(mission_id=36, task_id=46, name="Defend Port from attack",
+                        rule=lambda state, player:
+                        spargus_to_port(state, player)
+                        and any_gun(state, player)),
+    37: Jak3MissionData(mission_id=37, task_id=47, name="Beat gun course 2",
+                        rule=lambda state, player:
+                        spargus_to_port(state, player)
+                        and state.has("Scatter Gun", "Wave Concussor", player)),
+    38: Jak3MissionData(mission_id=38, task_id=48, name="Break barrier with blast bot",
+                        rule=lambda state, player:
+                        port_to_indb(state, player)),
+    39: Jak3MissionData(mission_id=39, task_id=49, name="Defend HQ from attack",
+                        rule=lambda state, player:
+                        port_to_hq(state, player)
+                        and any_gun(state, player)),
+    40: Jak3MissionData(mission_id=40, task_id=50, name="Find switch in sewers",
+                        rule=lambda state, player:
+                        port_to_hq(state, player)
+                        and any_gun(state, player)
+                        and state.has("JET-Board", player)),
+    41: Jak3MissionData(mission_id=41, task_id=51, name="Find cypher in eco grid",
+                        rule=lambda state, player:
+                        port_to_inda(state, player)),
+    42: Jak3MissionData(mission_id=42, task_id=52, name="Race for more artifacts",
+                        rule=lambda state, player:
+                        state.has("Gate Pass to Spargus", "Sand Shark", player)),
+    43: Jak3MissionData(mission_id=43, task_id=53, name="Destroy metal-pedes in nest",
+                        rule=lambda state, player:
+                        spargus_to_nest(state, player)),
+    44: Jak3MissionData(mission_id=44, task_id=54, name="Chase down metal head beasts",
+                        rule=lambda state, player:
+                        spargus_to_nest(state, player)),
+    45: Jak3MissionData(mission_id=45, task_id=55, name="Defend Spargus' front gate",
+                        rule=lambda state, player:
+                        car_with_guns(state, player)),
+    46: Jak3MissionData(mission_id=46, task_id=56, name="Take out Marauder stronghold",
+                        rule=lambda state, player:
+                        spargus_to_nest(state, player)),
+    47: Jak3MissionData(mission_id=47, task_id=57, name="Beat pillar ring challenges",
+                        rule=lambda state, player:
+                        port_to_metal_head_section(state, player)
+                        and state.has_all("Holo Cube", "Beam Generator", "Prism", "Quantum Reflector", "JET-Board")),
+    48: Jak3MissionData(mission_id=48, task_id=58, name="Destroy war factory defenses",
+                        rule=lambda state, player:
+                        port_to_hq(state, player)
+                        and any_gun(state, player)
+                        and state.has("Cypher Glyph")),
+    49: Jak3MissionData(mission_id=49, task_id=59, name="Explore war factory",
+                        rule=lambda state, player:
+                        port_to_hq(state, player)
+                        and any_gun(state, player)
+                        and state.has("Cypher Glyph")),
+    50: Jak3MissionData(mission_id=50, task_id=60, name="Beat Cyber Errol boss",
+                        rule=lambda state, player:
+                        port_to_hq(state, player)
+                        and any_gun(state, player)
+                        and state.has("Cypher Glyph")),
+    # Act 3 (Tomb Baron Fight Complete)
+    51: Jak3MissionData(mission_id=51, task_id=61, name="Rescue Seem at temple",
+                        rule=lambda state, player:
+                        spargus_to_monk_temple(state, player)
+                        and any_gun(state, player)
+                        and state.has_all(("Dark Jak", "Dark Strike", "Light Jak", "Light Flight"), player)),
+    52: Jak3MissionData(mission_id=52, task_id=62, name="Defend Spargus from attack",
+                        rule=lambda state, player:
+                        state.has_all("War Amulet #1", "War Amulet #2", "Gun Turret", player)),
+    53: Jak3MissionData(mission_id=53, task_id=63, name="Activate Astro-Viewer in Haven Forest",
                         rule=lambda state, player:
                         slums_to_port(state, player)
                         and state.has("JET-Board", player)),
-    50: Jak3MissionData(mission_id=50, task_id=59, name="Get Life Seed in Dead Town",
+    54: Jak3MissionData(mission_id=54, task_id=64, name="Get Life Seed in Dead Town",
                         rule=lambda state, player:
                         any_gun(state, player)
                         and state.has("Titan Suit", player)),
-    51: Jak3MissionData(mission_id=51, task_id=60, name="Protect Samos in Haven Forest",
+    55: Jak3MissionData(mission_id=55, task_id=65, name="Protect Samos in Haven Forest",
                         rule=lambda state, player:
                         slums_to_market(state, player)
                         and any_gun(state, player)
                         and state.has("Life Seed", player)),
-    52: Jak3MissionData(mission_id=52, task_id=61, name="Destroy Drill Platform Tower",
+    56: Jak3MissionData(mission_id=56, task_id=66, name="Destroy Drill Platform Tower",
                         rule=lambda state, player:
                         slums_to_port(state, player)
                         and (state.has("Titan Suit", player)
                              and state.has_any(("Blaster", "Vulcan Fury"), player))),
-    53: Jak3MissionData(mission_id=53, task_id=62, name="Rescue Lurkers for Brutter #2",
+    57: Jak3MissionData(mission_id=57, task_id=67, name="Rescue Lurkers for Brutter #2",
                         rule=lambda state, player:
                         slums_to_market(state, player)
                         and (state.has("Yellow Security Pass", player))
                         and any_gun(state, player)),
-    54: Jak3MissionData(mission_id=54, task_id=63, name="Win Class 1 Race at Stadium",
+    58: Jak3MissionData(mission_id=58, task_id=68, name="Win Class 1 Race at Stadium",
                         rule=lambda state, player:
                         slums_to_stadium(state, player)),
-    55: Jak3MissionData(mission_id=55, task_id=64, name="Explore Palace",
+    59: Jak3MissionData(mission_id=59, task_id=69, name="Explore Palace",
                         rule=lambda state, player:
                         slums_to_market(state, player)
                         and state.has_all(("JET-Board", "Purple Security Pass"), player)
                         and any_gun(state, player)),
-    56: Jak3MissionData(mission_id=56, task_id=65, name="Get Heart of Mar in Weapons Lab",
+    60: Jak3MissionData(mission_id=60, task_id=70, name="Get Heart of Mar in Weapons Lab",
                         rule=lambda state, player:
                         slums_to_landing(state, player)
                         and state.has("Black Security Pass", player)
                         and any_gun(state, player)),
-    57: Jak3MissionData(mission_id=57, task_id=66, name="Beat Krew in Weapons Lab",
+    61: Jak3MissionData(mission_id=60, task_id=71, name="Beat Krew in Weapons Lab",
                         rule=lambda state, player:
                         slums_to_landing(state, player)
                         and state.has("Black Security Pass", player)
                         and any_gun(state, player)),
-    58: Jak3MissionData(mission_id=58, task_id=67, name="Beat the Metal Head Mash Game",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)),
-    59: Jak3MissionData(mission_id=59, task_id=68, name="Find Sig in Under Port",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has_all(("Ruby Key", "Titan Suit"), player)),
-    60: Jak3MissionData(mission_id=60, task_id=69, name="Escort Sig in Under Port",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)
-                        and state.has_all(("Ruby Key", "Titan Suit"), player)
-                        and any_gun(state, player)),
-    61: Jak3MissionData(mission_id=61, task_id=70, name="Defend Stadium",
-                        rule=lambda state, player:
-                        slums_to_stadium(state, player)
-                        and state.has_all(("Heart of Mar", "Time Map", "Rift Rider"), player)
-                        and any_gun(state, player)),
-    62: Jak3MissionData(mission_id=62, task_id=71, name="Check the Construction Site",
-                        rule=lambda state, player:
-                        slums_to_port(state, player)),
 }
 
 
