@@ -9,9 +9,9 @@ class TestJak3Client(unittest.TestCase):
         try:
             from worlds.jak3 import client
             self.assertTrue(hasattr(client, 'launch'))
-            self.assertTrue(hasattr(client, 'Jak2Context'))
+            self.assertTrue(hasattr(client, 'Jak3Context'))
         except ImportError as e:
-            self.fail(f"Failed to import Jak 2 client: {e}")
+            self.fail(f"Failed to import Jak 3 client: {e}")
     
     def test_agents_import(self):
         """Test that agent modules can be imported successfully."""
@@ -21,7 +21,7 @@ class TestJak3Client(unittest.TestCase):
             self.assertTrue(Jak3MemoryReader)
             self.assertTrue(Jak3ReplClient)
         except ImportError as e:
-            self.fail(f"Failed to import Jak 2 agents: {e}")
+            self.fail(f"Failed to import Jak 3 agents: {e}")
 
     @patch('pymem.Pymem')
     def test_memory_reader_creation(self, mock_pymem):
