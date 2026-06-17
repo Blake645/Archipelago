@@ -161,7 +161,7 @@ Multiple traps can be active at the same time, and they may interact with each o
 
 ## I got soft-locked and I can't leave, how do I get out of this?
 
-Open the pause menu, navigate to `Restart/Quit`, then `Go to Hideout`, then `Yes`.
+Open the pause menu, navigate to `Restart/Quit`, then `Go to Spargus`, then `Yes`.
 Selecting this option will put you back into Spargus. From there, you can make your way
 back to where you were prior to getting stuck.
 

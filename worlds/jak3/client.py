@@ -159,7 +159,7 @@ class Jak3Context(CommonContext):
                 self.repl.setup_options(
                     self.auth[:16],
                     self.slot_seed[:8],
-                    slot_data["trap_effect_duration"],
+                    #slot_data["trap_effect_duration"],
                     completion_type,
                     completion_value))
 

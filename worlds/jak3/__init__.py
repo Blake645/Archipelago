@@ -60,13 +60,13 @@ class Jak3WebWorld(WebWorld):
 
     tutorials = [setup_en]
     bug_report_page = "https://github.com/Blake645/Archipelago/issues"
-    option_groups = [
-        OptionGroup("Traps", [
-            options.PercentOfFillerItemsReplacedWithTraps,
-            options.TrapEffectDuration,
-            options.TrapWeights
-        ])
-    ]
+    #option_groups = [
+        #OptionGroup("Traps", [
+        #    options.PercentOfFillerItemsReplacedWithTraps,
+        #    options.TrapEffectDuration,
+        #    options.TrapWeights
+        #])
+    #]
 
 
 class Jak3World(World):
@@ -115,14 +115,14 @@ It adds new weapons, devices and playable areas.
             raise OptionError(f"Unknown completion condition selected for Jak 3: {self.completion_type}")
 
         # Calculate Filler and Traps, if applicable
-        if self.options.percent_filler_replaced_with_traps > 0:
-            self.total_trap_items = (
-                int((
-                    self.options.percent_filler_replaced_with_traps / 100) * (self.total_items - self.total_prog_items))
-                )
-            self.total_filler_items = self.total_items - self.total_prog_items - self.total_trap_items
+        #if self.options.percent_filler_replaced_with_traps > 0:
+        #    self.total_trap_items = (
+        #        int((
+        #            self.options.percent_filler_replaced_with_traps / 100) * (self.total_items - self.total_prog_items))
+        #        )
+        #    self.total_filler_items = self.total_items - self.total_prog_items - self.total_trap_items
 
-        self.trap_weights = self.options.trap_weights.weighted_pair
+       # self.trap_weights = self.options.trap_weights.weighted_pair
 
     @staticmethod
     def item_data_helper(item: int) -> list[tuple[int, ItemClass, int]]:
@@ -170,12 +170,12 @@ It adds new weapons, devices and playable areas.
 
         # Handle Traps (fr!!)
         # Manually filling the item pool with an assortment of traps. Only done if one or more traps have a weight > 0.
-        names, weights = self.trap_weights
-        if sum(weights):
-            total_traps = self.total_trap_items
-            trap_list = self.random.choices(names, weights=weights, k=total_traps)
-            self.multiworld.itempool += [self.create_item(trap_name) for trap_name in trap_list]
-            items_made += total_traps
+        #names, weights = self.trap_weights
+        #if sum(weights):
+        #    total_traps = self.total_trap_items
+        #    trap_list = self.random.choices(names, weights=weights, k=total_traps)
+        #    self.multiworld.itempool += [self.create_item(trap_name) for trap_name in trap_list]
+        #    items_made += total_traps
 
         # Handle Unfilled Locations!
         all_regions = self.multiworld.get_regions(self.player)
@@ -190,7 +190,7 @@ It adds new weapons, devices and playable areas.
         return Jak3Item(name, classification, item_id, self.player)
 
     def get_filler_item_name(self) -> str:
-        filler_item_names = ["Dark Eco Pill", "Light Eco Pill", "Health Pack", "Scatter Gun Ammo", "Blaster Ammo", "Vulcan Fury Ammo",
+        filler_item_names = ["Dark Eco Pill", "Light Eco Pill", "Skull Gems", "Health Pack", "Scatter Gun Ammo", "Blaster Ammo", "Vulcan Fury Ammo",
                              "Peacemaker Ammo"]
         return self.random.choice(filler_item_names)
 
@@ -226,8 +226,8 @@ It adds new weapons, devices and playable areas.
         options_dict = self.options.as_dict("jak_3_completion_condition",
                                             "specific_mission_for_completion",
                                             "number_of_missions_for_completion",
-                                            "percent_filler_replaced_with_traps",
-                                            "trap_effect_duration",
-                                            "trap_weights",
+                                            #"percent_filler_replaced_with_traps",
+                                            #"trap_effect_duration",
+                                            #"trap_weights",
                                             )
         return options_dict
