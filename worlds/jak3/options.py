@@ -15,19 +15,18 @@ class CompletionCondition(Choice):
 class SpecificMissionForCompletion(Choice):
     """Set the specific mission to complete for the "Complete Specific Mission" completion condition."""
     display_name = "Specific Mission for Completion"
-    option_unlock_mar_tomb = 40
-    option_defeat_baron_at_palace = 22
-    option_defeat_baron_in_tomb = 43
-    option_defeat_metal_kor = 65
-    default = 65
+    option_defeat_robot_in_mines = 25
+    option_defeat_errol_in_factory = 50
+    option_defeat_final_boss = 60
+    default = 60
 
 
 class NumberOfMissionsForCompletion(Range):
     """Set the number of missions to complete for the "Complete Number of Missions" completion condition."""
     display_name = "Number of Missions for Completion"
     range_start = 5
-    range_end = 92
-    default = 65
+    range_end = 164
+    default = 60
 
 
 class PercentOfFillerItemsReplacedWithTraps(Range):
