@@ -23,7 +23,7 @@ ITEM_ID_KEY_END = 53            # Key/progression items end at ID 33
 ITEM_ID_FILLER_START = 54       # Filler items start at ID 34 (Dark Eco Pill)
 ITEM_ID_FILLER_END = 61         # Standard filler items end at ID 39
 TRAP_ID_START = 62               # Trap items start at ID 1 (Trip Trap)
-TRAP_ID_END = 56                # Trap items end at ID 17
+TRAP_ID_END = 78                # Trap items end at ID 17
 
 # Unified Item Table - Single source of truth for all items
 # Every item is organized by classification using ID ranges defined above
