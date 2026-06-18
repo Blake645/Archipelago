@@ -26,39 +26,56 @@ def car_with_guns(state, player) -> bool:
         )
     )
 def spargus_to_monk_temple(state, player) -> bool:
-    return state.has_all("Gate Pass to Spargus", "Dune Hopper", player)
-
+    return state.has_all(("Gate Pass to Spargus", "Dune Hopper"), player)
 
 def spargus_to_nest(state, player) -> bool:
-    return state.has_all("Gate Pass to Spargus", "Gila Stomper", player)
-
+    return state.has_all(("Gate Pass to Spargus", "Gila Stomper"), player)
 
 def spargus_to_port(state, player) -> bool:
-    return state.has("Gate Pass to Spargus", "Air Train Pass", player)
-
+    return state.has_all(("Gate Pass to Spargus", "Air Train Pass"), player)
 
 def port_to_metal_head_section(state, player) -> bool:
-    return state.has("Gate Pass to Spargus", "Air Train Pass", "Pass to Metal Head Section", "Dark Jak", "Dark Strike",  player)
-
+    return state.has_all((
+        "Gate Pass to Spargus",
+        "Air Train Pass",
+        "Pass to Metal Head Section",
+        "Dark Jak",
+        "Dark Strike"
+    ), player)
 
 def port_to_inda(state, player) -> bool:
-    return state.has("Gate Pass to Spargus", "Air Train Pass", "Pass to Industrial Section A", player)
-
+    return state.has_all((
+        "Gate Pass to Spargus",
+        "Air Train Pass",
+        "Pass to Industrial Section A"
+    ), player)
 
 def port_to_indb(state, player) -> bool:
-    return state.has("Gate Pass to Spargus", "Air Train Pass", "Pass to Industrial Section A", "Pass to Industrial Section B",
-                     player)
-
+    return state.has_all((
+        "Gate Pass to Spargus",
+        "Air Train Pass",
+        "Pass to Industrial Section A",
+        "Pass to Industrial Section B"
+    ), player)
 
 def port_to_hq(state, player) -> bool:
-    return state.has("Gate Pass to Spargus", "Air Train Pass", "Pass to Industrial Section A",
-                     "Pass to Industrial Section B", "Pass to Slums/New Haven",
-                     player)
+    return state.has_all((
+        "Gate Pass to Spargus",
+        "Air Train Pass",
+        "Pass to Industrial Section A",
+        "Pass to Industrial Section B",
+        "Pass to Slums/New Haven"
+    ), player)
 
 def port_to_ruins(state, player) -> bool:
-    return state.has("Gate Pass to Spargus", "Air Train Pass", "Pass to Industrial Section A",
-                     "Pass to Industrial Section B", "Pass to Slums/New Haven", "Pass to Outside Palace Ruins",
-                     player)
+    return state.has_all((
+        "Gate Pass to Spargus",
+        "Air Train Pass",
+        "Pass to Industrial Section A",
+        "Pass to Industrial Section B",
+        "Pass to Slums/New Haven",
+        "Pass to Outside Palace Ruins"
+    ), player)
 
 def any_gun(state, player) -> bool:
     return state.has_any(("Scatter Gun", "Wave Concussor", "Plasmite RPG",
