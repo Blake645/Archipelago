@@ -354,11 +354,11 @@ def find_root_directory(ctx: Jak3Context):
 
         try:
             if settings_version == "2.0":
-                Jak3_installed = load["games"]["Jak 3"]["isInstalled"]
+                jak3_installed = load["games"]["Jak 3"]["isInstalled"]
                 mod_sources = load["games"]["Jak 3"]["modsInstalledVersion"]
             elif settings_version == "3.0":
-                Jak3_installed = load["games"]["Jak3"]["isInstalled"]
-                mod_sources = load["games"]["Jak3"]["mods"]
+                jak3_installed = load["games"]["jak3"]["isInstalled"]
+                mod_sources = load["games"]["jak3"]["mods"]
             else:
                 msg = (f"{err_title}: The OpenGOAL settings file has an unknown version number ({settings_version}).\n"
                        f"{alt_instructions}")
@@ -370,8 +370,8 @@ def find_root_directory(ctx: Jak3Context):
             ctx.on_log_error(logger, msg)
             return
 
-        if not Jak3_installed:
-            msg = (f"{err_title}: The OpenGOAL Launcher is missing a normal install of Jak 2!\n"
+        if not jak3_installed:
+            msg = (f"{err_title}: The OpenGOAL Launcher is missing a normal install of Jak 3!\n"
                    f"{alt_instructions}")
             ctx.on_log_error(logger, msg)
             return

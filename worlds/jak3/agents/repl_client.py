@@ -96,7 +96,7 @@ class Jak3ReplClient:
                 self.gk_process.read_bool(self.gk_process.base_address)  # Ping to see if it's alive.
             except ProcessError:
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
-                       f"Please close all open windows and reopen the Jak II Client "
+                       f"Please close all open windows and reopen the Jak 3 Client "
                        f"from the Archipelago Launcher.\n"
                        f"If the game and compiler do not restart automatically, please follow these steps:\n"
                        f"   Run the OpenGOAL Launcher, click Jak II > Features > Mods > ArchipelaGOAL.\n"
@@ -109,13 +109,13 @@ class Jak3ReplClient:
                 self.goalc_process.read_bool(self.goalc_process.base_address)  # Ping to see if it's alive.
             except ProcessError:
                 msg = (f"Error sending data to compiler! (Did the compiler crash?)\n"
-                       f"Please close all open windows and reopen the Jak II Client "
+                       f"Please close all open windows and reopen the Jak 3 Client "
                        f"from the Archipelago Launcher.\n"
                        f"If the game and compiler do not restart automatically, please follow these steps:\n"
-                       f"   Run the OpenGOAL Launcher, click Jak II > Features > Mods > ArchipelaGOAL.\n"
+                       f"   Run the OpenGOAL Launcher, click Jak 3 > Features > Mods > ArchipelaGOAL.\n"
                        f"   Then click Advanced > Play in Debug Mode.\n"
                        f"   Then click Advanced > Open REPL.\n"
-                       f"   Then close and reopen the Jak II Client from the Archipelago Launcher.")
+                       f"   Then close and reopen the Jak 3 Client from the Archipelago Launcher.")
                 self.log_error(logger, msg)
                 self.connected = False
         else:
@@ -150,7 +150,7 @@ class Jak3ReplClient:
     # This helper function formats and sends `form` as a command to the REPL.
     # ALL commands to the REPL should be sent using this function.
     async def send_form(self, form: str, print_ok: bool = True) -> bool:
-        header = struct.pack("<II", len(form), 10)
+        header = struct.pack("<3", len(form), 10)
         async with self.lock:
             self.writer.write(header + form.encode())
             await self.writer.drain()

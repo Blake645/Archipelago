@@ -83,7 +83,7 @@ open to that directory.
 executables. Copy this path.
 - Run the Archipelago Launcher, then locate and click on `Open host.yaml`. You should see a new text editor open 
 that file.
-- Search for `jakii_options`, and you will need to make two changes here.
+- Search for `jak3_options`, and you will need to make two changes here.
 - First, find the `root_directory` entry. Paste the path you noted earlier (the one with `gk.exe` and `goalc.exe`)
 inside the double quotes.
 - **MAKE SURE YOU CHANGE ALL BACKSLASHES `\` TO FORWARD SLASHES `/`!!**
