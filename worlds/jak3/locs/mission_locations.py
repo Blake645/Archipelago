@@ -261,7 +261,7 @@ main_mission_table = {
                         and any_gun(state, player)
                         and state.has_all(("Slam Dozer", "Sand Shark", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal",
                                           "Amulet #1", "Amulet #2", "Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)),
-    61: Jak3MissionData(mission_id=60, task_id=71, name="Destroy final boss",
+    61: Jak3MissionData(mission_id=61, task_id=71, name="Destroy final boss",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
                         and any_gun(state, player)
@@ -476,3 +476,27 @@ side_mission_table = {
 
 
 side_tasks_to_missions = {miss.task_id: miss for _, miss in side_mission_table.items()}
+MAX_CHECKS_PER_MISSION = 10
+
+def get_location_id(mission_id: int, check_num: int) -> int:
+    """Calculate a unique location ID for a mission check.
+    Format: mission_id * 100 + check_num (supports up to 99 checks per mission)
+    """
+    return mission_id * 100 + check_num
+
+def get_all_mission_locations(checks_per_mission: int) -> dict[str, int]:
+    """Generate location name -> ID mapping for all missions with given checks per mission."""
+    locations = {}
+    for mission_id, mission in main_mission_table.items():
+        for check in range(1, checks_per_mission + 1):
+            name = f"{mission.name} - Check {check}"
+            locations[name] = get_location_id(mission_id, check)
+    for mission_id, mission in side_mission_table.items():
+        for check in range(1, checks_per_mission + 1):
+            name = f"{mission.name} - Check {check}"
+            locations[name] = get_location_id(mission_id, check)
+    return locations
+
+def get_max_mission_locations() -> dict[str, int]:
+    """Generate the maximum possible location set (for class-level registration)."""
+    return get_all_mission_locations(MAX_CHECKS_PER_MISSION)

@@ -50,11 +50,6 @@ class OffsetFactory:
 # the same lengths, as defined in `ap-info-jak3`.
 offsets = OffsetFactory()
 
-# Deathlink Information
-# death_count_offset = offsets.define(sizeof_uint32)
-# death_cause_offset = offsets.define(sizeof_uint8)
-# deathlink_enabled_offset = offsets.define(sizeof_uint8)
-
 # Memory version (uint32 in GOAL)
 memory_version_offset = offsets.define(sizeof_uint32)
 
@@ -65,15 +60,25 @@ next_side_mission_index_offset = offsets.define(sizeof_uint64)
 
 # Arrays of mission IDs (uint32 arrays)
 missions_checked_offset = offsets.define(sizeof_uint32, 75)
-side_missions_checked_offset = offsets.define(sizeof_uint32, 35)
+side_missions_checked_offset = offsets.define(sizeof_uint32, 75)
 
-# Connection status (added in version 2)
-connection_status_offset = offsets.define(sizeof_uint32)  # ap-connection-status enum
+# Connection status
+connection_status_offset = offsets.define(sizeof_uint32)
+
+# Slot name and seed (unused by client but must be accounted for)
+slot_name_offset = offsets.define(sizeof_uint8, 16)
+slot_seed_offset = offsets.define(sizeof_uint8, 8)
 
 # Completion Information
+completion_goal_offset = offsets.define(sizeof_uint8)
 completion_goal_type_offset = offsets.define(sizeof_uint32)
 completion_goal_value_offset = offsets.define(sizeof_uint32)
 completed_offset = offsets.define(sizeof_uint8)
+
+# Deathlink Information (unused but must be accounted for)
+death_count_offset = offsets.define(sizeof_uint32)
+cause_of_death_offset = offsets.define(sizeof_uint8)
+deathlink_enabled_offset = offsets.define(sizeof_uint8)
 
 # Trap Information
 trap_duration_offset = offsets.define(sizeof_float)
@@ -173,7 +178,7 @@ class Jak3MemoryReader:
                  log_warn_callback: Callable,
                  log_success_callback: Callable,
                  log_info_callback: Callable,
-                 marker: ByteString = b'ArChIpElAgO_Jak3\x00'):
+                 marker: ByteString = b'ArChIpElAgO_JaK3\x00'):
         self.marker = marker
 
         self.inform_checked_location = location_check_callback
