@@ -47,16 +47,15 @@ class Jak3ReplClient:
     writer: StreamWriter
     lock: Lock
     connected: bool = False
-    initiated_connect: bool = False  # Signals when user tells us to try reconnecting.
-    # received_deathlink: bool = False
+    initiated_connect: bool = False
 
-    # Variables to handle the title screen and initial game connection.
-    initial_item_count = -1  # Brand new games have 0 items, so initialize this to -1.
+    initial_item_count = -1
     received_initial_items = False
     processed_initial_items = False
 
-    # The REPL client needs the REPL/compiler process running, but that process
-    # also needs the game running. Therefore, the REPL client needs both running.
+    waiting_for_compile: bool = False
+    compile_ready_time: float = 0.0
+
     gk_process: pymem.process = None
     goalc_process: pymem.process = None
 
@@ -64,12 +63,10 @@ class Jak3ReplClient:
     inbox_index = 0
     json_message_queue: Queue[JsonMessageData] = queue.Queue()
 
-    # Logging callbacks
-    # These will write to the provided logger, as well as the Client GUI with color markup.
-    log_error: Callable    # Red
-    log_warn: Callable     # Orange
-    log_success: Callable  # Green
-    log_info: Callable     # White (default)
+    log_error: Callable
+    log_warn: Callable
+    log_success: Callable
+    log_info: Callable
 
     def __init__(self,
                  log_error_callback: Callable,
@@ -91,22 +88,36 @@ class Jak3ReplClient:
             await self.connect()
             self.initiated_connect = False
 
+        # Handle compile wait without blocking the event loop
+        if self.waiting_for_compile:
+            if asyncio.get_event_loop().time() >= self.compile_ready_time:
+                self.waiting_for_compile = False
+                self.log_info(logger, "[4/5] Set cheat mode to off...")
+                await asyncio.sleep(0.5)
+                await self.send_form_no_response("(set! *cheat-mode* #f)")
+                await asyncio.sleep(0.5)
+                self.log_info(logger, "[5/5] Run the title screen...")
+                await self.send_form_no_response("(start 'play (get-continue-by-name *game-info* \"title-start\"))")
+                self.log_success(logger, "The REPL is ready!")
+                self.connected = True
+            return
+
         if self.connected:
             try:
-                self.gk_process.read_bool(self.gk_process.base_address)  # Ping to see if it's alive.
+                self.gk_process.read_bool(self.gk_process.base_address)
             except ProcessError:
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
                        f"from the Archipelago Launcher.\n"
                        f"If the game and compiler do not restart automatically, please follow these steps:\n"
-                       f"   Run the OpenGOAL Launcher, click Jak II > Features > Mods > ArchipelaGOAL.\n"
+                       f"   Run the OpenGOAL Launcher, click Jak 3 > Features > Mods > ArchipelaGOAL.\n"
                        f"   Then click Advanced > Play in Debug Mode.\n"
                        f"   Then click Advanced > Open REPL.\n"
-                       f"   Then close and reopen the Jak II Client from the Archipelago Launcher.")
+                       f"   Then close and reopen the Jak 3 Client from the Archipelago Launcher.")
                 self.log_error(logger, msg)
                 self.connected = False
             try:
-                self.goalc_process.read_bool(self.goalc_process.base_address)  # Ping to see if it's alive.
+                self.goalc_process.read_bool(self.goalc_process.base_address)
             except ProcessError:
                 msg = (f"Error sending data to compiler! (Did the compiler crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
@@ -121,44 +132,42 @@ class Jak3ReplClient:
         else:
             return
 
-        # When connecting the game to the AP server on the title screen, we may be processing items from starting
-        # inventory or items received in an async game. Once we have caught up to the initial count, tell the player
-        # that we are ready to start. New items may even come in during the title screen, so if we go over the count,
-        # we should still send the ready signal.
         if not self.processed_initial_items:
             if self.inbox_index >= self.initial_item_count >= 0:
                 self.processed_initial_items = True
                 await self.send_connection_status("ready")
 
-        # Receive Items from AP. Handle 1 item per tick.
         if len(self.item_inbox) > self.inbox_index:
             await self.receive_item()
             await self.save_data()
             self.inbox_index += 1
 
-        # if self.received_deathlink:
-        #     await self.receive_deathlink()
-        #     self.received_deathlink = False
-
-        # Progressively empty the queue during each tick
-        # if text messages happen to be too slow we could pool dequeuing here,
-        # but it'd slow down the ItemReceived message during release
         if not self.json_message_queue.empty():
             json_txt_data = self.json_message_queue.get_nowait()
             await self.write_game_text(json_txt_data)
 
-    # This helper function formats and sends `form` as a command to the REPL.
-    # ALL commands to the REPL should be sent using this function.
+    async def send_form_no_response(self, form: str) -> bool:
+        """Send a form that doesn't return a response through the socket."""
+        header = struct.pack("<II", len(form), 10)
+        async with self.lock:
+            self.writer.write(header + form.encode())
+            await self.writer.drain()
+        return True
+
     async def send_form(self, form: str, print_ok: bool = True) -> bool:
-        header = struct.pack("<3", len(form), 10)
+        header = struct.pack("<II", len(form), 10)
         async with self.lock:
             self.writer.write(header + form.encode())
             await self.writer.drain()
 
-            response_data = await self.reader.read(1024)
-            response = response_data.decode()
+            try:
+                response_data = await asyncio.wait_for(self.reader.read(8192), timeout=120.0)
+                response = response_data.decode()
+            except asyncio.TimeoutError:
+                self.log_error(logger, f"Timed out waiting for REPL response to: {form}")
+                return False
 
-            if "OK!" in response:
+            if response and len(response.strip()) > 0:
                 if print_ok:
                     logger.debug(response)
                 return True
@@ -168,14 +177,14 @@ class Jak3ReplClient:
 
     async def connect(self):
         try:
-            self.gk_process = pymem.Pymem("gk.exe")  # The GOAL Kernel
+            self.gk_process = pymem.Pymem("gk.exe")
             logger.debug("Found the gk process: " + str(self.gk_process.process_id))
         except ProcessNotFound:
             self.log_error(logger, "Could not find the game process.")
             return
 
         try:
-            self.goalc_process = pymem.Pymem("goalc.exe")  # The GOAL Compiler and REPL
+            self.goalc_process = pymem.Pymem("goalc.exe")
             logger.debug("Found the goalc process: " + str(self.goalc_process.process_id))
         except ProcessNotFound:
             self.log_error(logger, "Could not find the compiler process.")
@@ -184,10 +193,9 @@ class Jak3ReplClient:
         try:
             self.reader, self.writer = await asyncio.open_connection(self.ip, self.port)
             await asyncio.sleep(1)
-            connect_data = await self.reader.read(1024)
+            connect_data = await self.reader.read(8192)
             welcome_message = connect_data.decode()
 
-            # Should be the OpenGOAL welcome message (ignore version number).
             if "Connected to OpenGOAL" and "nREPL!" in welcome_message:
                 logger.debug(welcome_message)
             else:
@@ -198,30 +206,21 @@ class Jak3ReplClient:
             return
 
         if self.reader and self.writer:
+            self.log_info(logger, "[1/5] Listen on the game's port...")
+            await asyncio.sleep(0.5)
+            await self.send_form_no_response("(lt)")
+            await asyncio.sleep(3)
 
-            # Run these steps in order to set up the game for Archipelago.
-            current_step = 1
-            steps_to_run = [
-                ("Listen on the game's port", "(lt)"),
-                ("Set debug flag to on", "(set! *debug-segment* #t)"),
-                ("Compile the game", "(mi)"),
-                # ("Set debug flag to off", "(set! *debug-segment* #f)"),
-                ("Set cheat mode to off", "(set! *cheat-mode* #f)"),
-                ("Run the title screen", "(start \'play (get-continue-by-name *game-info* \"title-start\"))"),
-            ]
-            for step, command in steps_to_run:
-                self.log_info(logger, f"[{current_step}/{len(steps_to_run)}] {step}...")
-                await asyncio.sleep(0.5)
-                if await self.send_form(command, print_ok=False):
-                    current_step += 1
-                    continue
-                else:
-                    self.log_error(logger, f"[{current_step}/{len(steps_to_run)}] Failed to {step}!")
-                    self.connected = False
-                    break  # Skips the for/else block below.
-            else:
-                self.log_success(logger, "The REPL is ready!")
-                self.connected = True
+            self.log_info(logger, "[2/5] Set debug flag to on...")
+            await asyncio.sleep(0.5)
+            await self.send_form_no_response("(set! *debug-segment* #t)")
+
+            self.log_info(logger, "[3/5] Compile the game...")
+            await asyncio.sleep(0.5)
+            await self.send_form_no_response("(mi)")
+            self.log_info(logger, "Waiting for compilation to finish (this may take a minute)...")
+            self.waiting_for_compile = True
+            self.compile_ready_time = asyncio.get_event_loop().time() + 30
 
     async def print_status(self):
         gc_proc_id = str(self.goalc_process.process_id) if self.goalc_process else "None"
@@ -240,33 +239,21 @@ class Jak3ReplClient:
         msg += f"   Last item received: {last_item}\n"
         self.log_info(logger, msg)
 
-    # To properly display in-game text:
-    # - It must be a valid character from the ALLOWED_CHARACTERS list.
-    # - All lowercase letters must be uppercase.
-    # - It must be wrapped in double quotes (for the REPL command).
-    # - Apostrophes must be handled specially - GOAL uses invisible ASCII character 0x12.
-    # I also only allotted 32 bytes to each string in OpenGOAL, so we must truncate.
     @staticmethod
     def sanitize_game_text(text: str) -> str:
         result = "".join([c if c in ALLOWED_CHARACTERS else "?" for c in text[:32]]).upper()
         result = result.replace("'", "\\c12")
         return f"\"{result}\""
 
-    # Like sanitize_game_text, but the settings file will NOT allow any whitespace in the slot_name or slot_seed data.
-    # And don't replace any chars with "?" for good measure.
     @staticmethod
     def sanitize_file_text(text: str) -> str:
         allowed_chars_no_extras = ALLOWED_CHARACTERS - {" ", "'", "(", ")", "\""}
         result = "".join([c if c in allowed_chars_no_extras else "" for c in text[:16]]).upper()
         return f"\"{result}\""
 
-    # Pushes a JsonMessageData object to the json message queue to be processed during the repl main_tick
     def queue_game_text(self, my_item_name, my_item_finder, their_item_name, their_item_owner):
-        # TODO - Re-add message queue when implemented in mod. Until then, pass.
-        # self.json_message_queue.put(JsonMessageData(my_item_name, my_item_finder, their_item_name, their_item_owner))
         pass
 
-    # OpenGOAL can handle both its own string datatype and C-like character pointers (charp).
     async def write_game_text(self, data: JsonMessageData):
         logger.debug(f"Sending info to the in-game messenger!")
         body = ""
@@ -278,12 +265,11 @@ class Jak3ReplClient:
             body += (f" (append-messages (-> *ap-messenger* 0) \'sent "
                      f" {self.sanitize_game_text(data.their_item_name)} "
                      f" {self.sanitize_game_text(data.their_item_owner)})")
-        await self.send_form(f"(begin {body} (none))", print_ok=False)
+        await self.send_form_no_response(f"(begin {body} (none))")
 
     async def receive_item(self):
         item = getattr(self.item_inbox[self.inbox_index], "item")
 
-        # Unknown item check
         if item not in item_table:
             self.log_error(logger, f"Tried to receive item with unknown AP ID {item}!")
             return False
@@ -292,48 +278,16 @@ class Jak3ReplClient:
         item_name: str = item_data.name
         item_symbol: str = item_data.symbol
 
-        # Trap handling
         if TRAP_ID_START <= item <= TRAP_ID_END:
-            ok = await self.send_form(f"(ap-trap-received! '{item_symbol})")
-            if ok:
-                logger.debug(f"Received {item_name}!")
-            else:
-                self.log_error(logger, f"Unable to receive {item_name}!")
+            ok = await self.send_form_no_response(f"(ap-trap-received! '{item_symbol})")
+            logger.debug(f"Sent trap {item_name}!")
             return ok
 
-        # Normal item handling
-        ok = await self.send_form(f"(ap-item-received! '{item_symbol})")
+        ok = await self.send_form_no_response(f"(ap-item-received! '{item_symbol})")
         if ok:
-            logger.debug(f"Received {item_name}!")
-        else:
-            self.log_error(logger, f"Unable to receive {item_name}!")
-
+            logger.debug(f"Sent item {item_name}!")
         return ok
 
-    # NOTE: Deathlink is coming later
-    # async def receive_deathlink(self) -> bool:
-#
-        # Because it should be funny sometimes, right?
-#        death_types = ["\'death",
-#                      "\'death",
-#                      "\'death",
-#                      "\'death",
-#                      "\'endlessfall",
-#                      "\'drown-death",
-#                      "\'melt",
-#                      "\'explode"]
-#        chosen_death = random.choice(death_types)
-#
-#        ok = await self.send_form("(ap-deathlink-received! " + chosen_death + ")")
-#        if ok:
-#            logger.debug(f"Received deathlink signal!")
-#        else:
-#            self.log_error(logger, f"Unable to receive deathlink signal!")
-#        return ok
-
-    # OpenGOAL has a limit of 8 parameters per function. We've already hit this limit. So, define a new datatype
-    # in OpenGOAL that holds all these options, instantiate the type here, and have ap-setup-options! function take
-    # that instance as input.
     async def setup_options(self,
                             slot_name: str,
                             slot_seed: str,
@@ -343,12 +297,12 @@ class Jak3ReplClient:
         sanitized_name = self.sanitize_file_text(slot_name)
         sanitized_seed = self.sanitize_file_text(slot_seed)
 
-        ok = await self.send_form(f"(ap-setup-options! (new 'static 'ap-seed-options "
-                                  f":slot-name {sanitized_name} "
-                                  f":slot-seed {sanitized_seed} "
-                                  f":trap-duration {trap_time}.0 "
-                                  f":completion-type {completion_type} "
-                                  f":completion-value {completion_value} ))")
+        ok = await self.send_form_no_response(f"(ap-setup-options! (new 'static 'ap-seed-options "
+                                              f":slot-name {sanitized_name} "
+                                              f":slot-seed {sanitized_seed} "
+                                              f":trap-duration {trap_time}.0 "
+                                              f":completion-type {completion_type} "
+                                              f":completion-value {completion_value} ))")
         message = (f"Setting options: \n"
                    f"   Slot Name {sanitized_name}, \n"
                    f"   Slot Seed {sanitized_seed}, \n"
@@ -356,17 +310,14 @@ class Jak3ReplClient:
                    f"   Goal Type {completion_type}, \n"
                    f"   Goal Value {completion_value}... ")
         if ok:
-            logger.debug(message + "Success!")
+            logger.debug(message + "Sent!")
         else:
             self.log_error(logger, message + "Failed!")
         return ok
 
     async def send_connection_status(self, status: str) -> bool:
-        ok = await self.send_form(f"(ap-set-connection-status! (ap-connection-status {status}))")
-        if ok:
-            logger.debug(f"Connection Status {status} set!")
-        else:
-            self.log_error(logger, f"Connection Status {status} failed to set!")
+        ok = await self.send_form_no_response(f"(ap-set-connection-status! (ap-connection-status {status}))")
+        logger.debug(f"Connection Status {status} sent!")
         return ok
 
     async def save_data(self):

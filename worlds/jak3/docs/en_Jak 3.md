@@ -6,7 +6,7 @@ The game currently contains the following Location Checks:
 - All 60 Main Missions
 - All 50 Side Missions 
 
-These may contain items for different games, as well as items within Jak II.
+These may contain items for different games, as well as items within Jak 3.
 In addition, the rewards that you get from the main missions are scattered across the multiworld!
 
 ## What are the Special Items? What do they unlock (if applicable)?

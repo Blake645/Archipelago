@@ -12,10 +12,10 @@ class Jak3Region(Region):
     """
 
     game = jak3_name
-    location_count: int = 0
 
     def __init__(self, name: str, player: int, multiworld: MultiWorld):
         super().__init__(name, player, multiworld)
+        self.location_count: int = 0
 
     def add_jak_mission(self, loc_id: int, name: str, access_rule: CollectionRule | None = None) -> None:
         """

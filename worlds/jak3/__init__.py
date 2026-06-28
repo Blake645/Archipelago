@@ -64,7 +64,7 @@ class Jak3WebWorld(WebWorld):
 class Jak3World(World):
     """
 Jak 3 is a 2004 action-adventure platformer video game developed by Naughty Dog and published by Sony Computer Entertainment
-for the PlayStation 2 (PS2). The game is the sequel to Jak II (2003) and serves as the conclusion of the trilogy.
+for the PlayStation 2 (PS2). The game is the sequel to Jak 3 (2003) and serves as the conclusion of the trilogy.
 The story of the previous games continues as the player takes on the dual role of recurring protagonists Jak and Daxter.
 It adds new weapons, devices and playable areas.
     """
@@ -125,20 +125,23 @@ It adds new weapons, devices and playable areas.
         for item_name in self.item_name_to_id:
             item_id = self.item_name_to_id[item_name]
 
+            # Skip filler and traps - they'll be handled below
+            if ITEM_ID_FILLER_START <= item_id <= ITEM_ID_FILLER_END:
+                continue
+            if TRAP_ID_START <= item_id <= TRAP_ID_END:
+                continue
+
             data = self.item_data_helper(item_id)
             for (count, classification, num) in data:
                 self.multiworld.itempool += [
                     Jak3Item(item_name, classification, item_id, self.player)
                     for _ in range(count)]
-                items_made += 1
-
-            if TRAP_ID_START <= item_id <= TRAP_ID_END:
-                continue
+                items_made += count
 
         all_regions = self.multiworld.get_regions(self.player)
         total_locations = sum(reg.location_count for reg in cast(list[Jak3Region], all_regions))
         total_filler = total_locations - items_made
-        self.multiworld.itempool += [self.create_filler() for _ in range(total_filler)]
+        self.multiworld.itempool += [self.create_filler() for _ in range(max(0, total_filler))]
 
     def create_item(self, name: str) -> Jak3Item:
         item_id = self.item_name_to_id[name]
