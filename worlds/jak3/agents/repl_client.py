@@ -293,7 +293,8 @@ class Jak3ReplClient:
                             slot_seed: str,
                             trap_time: int,
                             completion_type: int,
-                            completion_value: int) -> bool:
+                            completion_value: int,
+                            jak_is_jak2: int = 0) -> bool:
         sanitized_name = self.sanitize_file_text(slot_name)
         sanitized_seed = self.sanitize_file_text(slot_seed)
 
@@ -302,13 +303,15 @@ class Jak3ReplClient:
                                               f":slot-seed {sanitized_seed} "
                                               f":trap-duration {trap_time}.0 "
                                               f":completion-type {completion_type} "
-                                              f":completion-value {completion_value} ))")
+                                              f":completion-value {completion_value} "
+                                              f":jak-is-jak2 {jak_is_jak2} ))")
         message = (f"Setting options: \n"
                    f"   Slot Name {sanitized_name}, \n"
                    f"   Slot Seed {sanitized_seed}, \n"
                    f"   Trap Duration {trap_time}, \n"
                    f"   Goal Type {completion_type}, \n"
-                   f"   Goal Value {completion_value}... ")
+                   f"   Goal Value {completion_value}, \n"
+                   f"   Jak is Jak 2: {jak_is_jak2}... ")
         if ok:
             logger.debug(message + "Sent!")
         else:

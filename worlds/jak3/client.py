@@ -146,7 +146,8 @@ class Jak3Context(CommonContext):
                     self.slot_seed[:8],
                     0,  # trap_effect_duration placeholder
                     completion_type,
-                    completion_value))
+                    completion_value,
+                    slot_data.get("jak_is_jak2", 0)))
 
         if cmd == "ReceivedItems":
             if not self.repl.received_initial_items and not self.repl.processed_initial_items:

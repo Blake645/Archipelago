@@ -197,5 +197,6 @@ It adds new weapons, devices and playable areas.
             "specific_mission_for_completion",
             "number_of_missions_for_completion",
             "checks_per_mission",
+            "jak_is_jak2",
         )
         return options_dict

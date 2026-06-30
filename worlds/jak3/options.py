@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from Options import PerGameCommonOptions, StartInventoryPool, Choice, Range, OptionCounter
+from Options import PerGameCommonOptions, StartInventoryPool, Choice, Range, Toggle, OptionCounter
 from .items import item_table, TRAP_ID_START, TRAP_ID_END
 
 class CompletionCondition(Choice):
@@ -32,10 +32,15 @@ class ChecksPerMission(Range):
     range_end = 10
     default = 5
 
+class JakIsJak2(Toggle):
+    """Changes Jak's model to his Jak II appearance. WARNING: Shadows are a bit broken, and you won't see things like armor on Jak."""
+    display_name = "Jak is Jak 2"
+
 @dataclass
 class Jak3Options(PerGameCommonOptions):
     jak_3_completion_condition: CompletionCondition
     specific_mission_for_completion: SpecificMissionForCompletion
     number_of_missions_for_completion: NumberOfMissionsForCompletion
     checks_per_mission: ChecksPerMission
+    jak_is_jak2: JakIsJak2
     start_inventory_from_pool: StartInventoryPool
