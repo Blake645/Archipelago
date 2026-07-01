@@ -134,7 +134,6 @@ class Jak3Context(CommonContext):
             else:
                 completion_value = 0
 
-            # Set checks per mission so the memory reader sends the right location IDs
             self.memr.checks_per_mission = slot_data["checks_per_mission"]
 
             if not self.repl.received_initial_items and self.repl.initial_item_count < 0:
@@ -144,7 +143,7 @@ class Jak3Context(CommonContext):
                 self.repl.setup_options(
                     self.auth[:16],
                     self.slot_seed[:8],
-                    0,  # trap_effect_duration placeholder
+                    slot_data.get("trap_effect_duration", 30),
                     completion_type,
                     completion_value,
                     slot_data.get("jak_is_jak2", 0)))

@@ -26,7 +26,7 @@ class Jak3Settings(settings.Group):
 
     class AutoDetectRootDirectory(settings.Bool):
         """Attempt to find the OpenGOAL installation and the Jak 3 mod executables (gk.exe and goalc.exe)
-        automatically. If set to true, the ArchipelaGOAL Jak 3 Root Directory setting is ignored."""
+        automatically. If true, the ArchipelaGOAL Jak 3 Root Directory setting is ignored."""
         description = "ArchipelagoGOAL Jak 3 Auto Detect Root Directory"
 
     root_directory: RootDirectory = "C:/Program Files/OpenGOAL/features/jak3/mods/archipelagoal/archipelagoal"
@@ -42,7 +42,6 @@ components.append(Component("Jak 3 Client",
                             func=launch_client,
                             component_type=Type.CLIENT,
                             icon="jak3_icon"))
-
 
 icon_paths["jak3_icon"] = f"ap:{__name__}/icons/jak3_icon.png"
 
@@ -64,7 +63,7 @@ class Jak3WebWorld(WebWorld):
 class Jak3World(World):
     """
 Jak 3 is a 2004 action-adventure platformer video game developed by Naughty Dog and published by Sony Computer Entertainment
-for the PlayStation 2 (PS2). The game is the sequel to Jak 3 (2003) and serves as the conclusion of the trilogy.
+for the PlayStation 2 (PS2). The game is the sequel to Jak II (2003) and serves as the conclusion of the trilogy.
 The story of the previous games continues as the player takes on the dual role of recurring protagonists Jak and Daxter.
 It adds new weapons, devices and playable areas.
     """
@@ -72,7 +71,6 @@ It adds new weapons, devices and playable areas.
     game = jak3_name
     web = Jak3WebWorld()
 
-    # Options
     options_dataclass = options.Jak3Options
     options: options.Jak3Options
 
@@ -86,11 +84,10 @@ It adds new weapons, devices and playable areas.
     location_name_groups = {}
     origin_region_name = "Mission Tree"
 
-    # Cache option-related values.
     completion_type: int
     completion_value: int
     total_items: int = 79
-    total_prog_items: int = 53
+    total_prog_items: int = 55
     total_filler_items: int = 0
     total_trap_items: int = 0
 
@@ -125,7 +122,6 @@ It adds new weapons, devices and playable areas.
         for item_name in self.item_name_to_id:
             item_id = self.item_name_to_id[item_name]
 
-            # Skip filler and traps - they'll be handled below
             if ITEM_ID_FILLER_START <= item_id <= ITEM_ID_FILLER_END:
                 continue
             if TRAP_ID_START <= item_id <= TRAP_ID_END:
@@ -141,7 +137,29 @@ It adds new weapons, devices and playable areas.
         all_regions = self.multiworld.get_regions(self.player)
         total_locations = sum(reg.location_count for reg in cast(list[Jak3Region], all_regions))
         total_filler = total_locations - items_made
-        self.multiworld.itempool += [self.create_filler() for _ in range(max(0, total_filler))]
+
+        # Calculate how many filler slots to replace with traps
+        trap_percent = self.options.percent_filler_replaced_with_traps.value / 100
+        trap_count = int(total_filler * trap_percent)
+        filler_count = total_filler - trap_count
+
+        # If all trap weights are 0, don't place any traps
+        trap_names, trap_weights = self.options.trap_weights.weighted_pair
+        if all(w == 0 for w in trap_weights):
+            trap_count = 0
+            filler_count = total_filler
+
+            print(f"[Jak3] total_locations={total_locations}, items_made={items_made}, total_filler={total_filler}")
+            print(f"[Jak3] trap_percent={trap_percent}, trap_count={trap_count}, filler_count={filler_count}")
+            print(f"[Jak3] trap_weights={list(zip(trap_names, trap_weights))}")
+        self.multiworld.itempool += [self.create_filler() for _ in range(max(0, filler_count))]
+        self.multiworld.itempool += [self.create_trap() for _ in range(max(0, trap_count))]
+
+    def create_trap(self) -> Jak3Item:
+        trap_names, trap_weights = self.options.trap_weights.weighted_pair
+        trap_name = self.random.choices(trap_names, weights=trap_weights, k=1)[0]
+        trap_id = self.item_name_to_id[trap_name]
+        return Jak3Item(trap_name, ItemClass.trap, trap_id, self.player)
 
     def create_item(self, name: str) -> Jak3Item:
         item_id = self.item_name_to_id[name]
@@ -198,5 +216,6 @@ It adds new weapons, devices and playable areas.
             "number_of_missions_for_completion",
             "checks_per_mission",
             "jak_is_jak2",
+            "trap_effect_duration",
         )
         return options_dict

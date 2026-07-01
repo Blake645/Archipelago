@@ -51,7 +51,7 @@ item_table = {
     14: Jak3ItemData(item_id=14, name="Dark Jak", symbol="darkjak"),
     15: Jak3ItemData(item_id=15, name="Dark Bomb", symbol="darkjak-bomb0"),
     16: Jak3ItemData(item_id=16, name="Dark Blast", symbol="darkjak-bomb1"),
-    17: Jak3ItemData(item_id=17, name="Dark Invisibility", symbol="artifact-invs"),
+    17: Jak3ItemData(item_id=17, name="Dark Invisibility", symbol="artifact-invis"),
     18: Jak3ItemData(item_id=18, name="Dark Strike", symbol="darkjak-smack"),
 
     # Security Passes (IDs 19-25)
@@ -99,6 +99,7 @@ item_table = {
     52: Jak3ItemData(item_id=52, name="Dark Eco Crystal", symbol="dark-eco-crystal"),
     53: Jak3ItemData(item_id=53, name="Light Eco Crystal", symbol="light-eco-crystal"),
     54: Jak3ItemData(item_id=54, name="Seal of Mar", symbol="seal-of-mar"),
+    55: Jak3ItemData(item_id=55, name="Gun Turret", symbol="gun-turret"),
     
     # ========== FILLER ITEMS ==========
     # Standard Filler Items (IDs 54-61)
@@ -126,7 +127,6 @@ item_table = {
     73: Jak3ItemData(item_id=73, name="Mirror Trap", symbol="man-in-the-mirror"),
 
     # Jak 2 Traps! (IDs 73-78)
-    74: Jak3ItemData(item_id=74, name="High Alert Trap", symbol="five-star"),
     75: Jak3ItemData(item_id=75, name="Ammo Trap", symbol="russian-roulette"),
     76: Jak3ItemData(item_id=76, name="Dark Trap", symbol="anger-issues"),
     77: Jak3ItemData(item_id=77, name="Speed Trap", symbol="sonic-speed"),
