@@ -103,28 +103,28 @@ item_table = {
     
     # ========== FILLER ITEMS ==========
     # Standard Filler Items (IDs 54-61)
-    55: Jak3ItemData(item_id=55, name="Dark Eco Pill", symbol="dark-eco-pill"),
-    56: Jak3ItemData(item_id=56, name="Light Eco Pill", symbol="light-eco-pill"),
-    57: Jak3ItemData(item_id=57, name="Health Pack", symbol="health-pack"),
-    58: Jak3ItemData(item_id=58, name="Scatter Gun Ammo", symbol="ammo-red"),
-    59: Jak3ItemData(item_id=59, name="Blaster Ammo", symbol="ammo-yellow"),
-    60: Jak3ItemData(item_id=60, name="Vulcan Fury Ammo", symbol="ammo-blue"),
-    61: Jak3ItemData(item_id=61, name="Peacemaker Ammo", symbol="ammo-dark"),
-    62: Jak3ItemData(item_id=62, name="Skull Gems", symbol="gem"),
+    56: Jak3ItemData(item_id=55, name="Dark Eco Pill", symbol="dark-eco-pill"),
+    57: Jak3ItemData(item_id=56, name="Light Eco Pill", symbol="light-eco-pill"),
+    58: Jak3ItemData(item_id=57, name="Health Pack", symbol="health-pack"),
+    59: Jak3ItemData(item_id=58, name="Scatter Gun Ammo", symbol="ammo-red"),
+    60: Jak3ItemData(item_id=59, name="Blaster Ammo", symbol="ammo-yellow"),
+    61: Jak3ItemData(item_id=60, name="Vulcan Fury Ammo", symbol="ammo-blue"),
+    62: Jak3ItemData(item_id=61, name="Peacemaker Ammo", symbol="ammo-dark"),
+    63: Jak3ItemData(item_id=62, name="Skull Gems", symbol="gem"),
 
     # Trap Items (IDs 62-78)
     # Jak 1 Traps, Reimagined for Jak 2 and 3 (IDs 62-72)
-    63: Jak3ItemData(item_id=63, name="Trip Trap", symbol="trip"),
-    64: Jak3ItemData(item_id=64, name="Slip Trap", symbol="ice-physics"),
-    65: Jak3ItemData(item_id=65, name="Gravity Trap", symbol="the-big-apple"),
-    66: Jak3ItemData(item_id=66, name="Camera Trap", symbol="caught-in-4k"),
-    67: Jak3ItemData(item_id=67, name="Darkness Trap", symbol="daredevil"),
-    68: Jak3ItemData(item_id=68, name="Earthquake Trap", symbol="caseoh"),
-    69: Jak3ItemData(item_id=69, name="Teleport Trap", symbol="instant-transmission"),
-    70: Jak3ItemData(item_id=70, name="Pacifism Trap", symbol="personal-bubble"),
-    71: Jak3ItemData(item_id=71, name="Health Trap", symbol="hit-by-bus"),
-    72: Jak3ItemData(item_id=72, name="Ledge Trap", symbol="rivals-of-aether"),
-    73: Jak3ItemData(item_id=73, name="Mirror Trap", symbol="man-in-the-mirror"),
+    64: Jak3ItemData(item_id=63, name="Trip Trap", symbol="trip"),
+    65: Jak3ItemData(item_id=64, name="Slip Trap", symbol="ice-physics"),
+    66: Jak3ItemData(item_id=65, name="Gravity Trap", symbol="the-big-apple"),
+    67: Jak3ItemData(item_id=66, name="Camera Trap", symbol="caught-in-4k"),
+    68: Jak3ItemData(item_id=67, name="Darkness Trap", symbol="daredevil"),
+    69: Jak3ItemData(item_id=68, name="Earthquake Trap", symbol="caseoh"),
+    70: Jak3ItemData(item_id=69, name="Teleport Trap", symbol="instant-transmission"),
+    71: Jak3ItemData(item_id=70, name="Pacifism Trap", symbol="personal-bubble"),
+    72: Jak3ItemData(item_id=71, name="Health Trap", symbol="hit-by-bus"),
+    73: Jak3ItemData(item_id=72, name="Ledge Trap", symbol="rivals-of-aether"),
+    74: Jak3ItemData(item_id=73, name="Mirror Trap", symbol="man-in-the-mirror"),
 
     # Jak 2 Traps! (IDs 73-78)
     75: Jak3ItemData(item_id=75, name="Ammo Trap", symbol="russian-roulette"),
