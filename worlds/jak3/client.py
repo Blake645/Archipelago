@@ -21,6 +21,7 @@ from pymem.exception import ProcessNotFound
 import ModuleUpdate
 import Utils
 
+from BaseClasses import ItemClassification as IC
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled
 from NetUtils import ClientStatus
 
@@ -30,6 +31,7 @@ from .agents.memory_reader import Jak3MemoryReader
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
 from .options import CompletionCondition
+from .items import item_table
 
 ModuleUpdate.update()
 logger = logging.getLogger("Jak3Client")
@@ -170,10 +172,14 @@ class Jak3Context(CommonContext):
 
             if self.slot_concerns_self(recipient):
                 my_item_name = self.item_names.lookup_in_game(item.item)
-                if self.slot_concerns_self(item.player):
-                    my_item_finder = "MYSELF"
+                # Only show filler items in messenger, important items have talker spawns
+                if item.item in item_table and item_table[item.item].classification == IC.filler:
+                    if self.slot_concerns_self(item.player):
+                        my_item_finder = "MYSELF"
+                    else:
+                        my_item_finder = self.player_names[item.player]
                 else:
-                    my_item_finder = self.player_names[item.player]
+                    my_item_name = None  # Don't show important items in messenger
 
             if self.slot_concerns_self(item.player):
                 their_item_name = self.item_names.lookup_in_slot(item.item, recipient)

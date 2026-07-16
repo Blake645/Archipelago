@@ -252,23 +252,37 @@ class Jak3ReplClient:
         return f"\"{result}\""
 
     def queue_game_text(self, my_item_name, my_item_finder, their_item_name, their_item_owner):
-        pass
+        self.json_message_queue.put(JsonMessageData(my_item_name, my_item_finder, their_item_name, their_item_owner))
 
     async def write_game_text(self, data: JsonMessageData):
         logger.debug(f"Sending info to the in-game messenger!")
         body = ""
         if data.my_item_name and data.my_item_finder:
-            body += (f" (append-messages (-> *ap-messenger* 0) \'recv "
-                     f" {self.sanitize_game_text(data.my_item_name)} "
-                     f" {self.sanitize_game_text(data.my_item_finder)})")
+            if data.my_item_finder == "TRAP":
+                body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
+                         f" (when m (append-messages m 'trap "
+                         f" {self.sanitize_game_text(data.my_item_name)} "
+                         f" {self.sanitize_game_text('TRAP')})))")
+            elif data.my_item_finder == "MYSELF":
+                body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
+                         f" (when m (append-messages m 'found "
+                         f" {self.sanitize_game_text(data.my_item_name)} "
+                         f" {self.sanitize_game_text(data.my_item_finder)})))")
+            else:
+                body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
+                         f" (when m (append-messages m 'recv "
+                         f" {self.sanitize_game_text(data.my_item_name)} "
+                         f" {self.sanitize_game_text(data.my_item_finder)})))")
         if data.their_item_name and data.their_item_owner:
-            body += (f" (append-messages (-> *ap-messenger* 0) \'sent "
+            body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
+                     f" (when m (append-messages m 'sent "
                      f" {self.sanitize_game_text(data.their_item_name)} "
-                     f" {self.sanitize_game_text(data.their_item_owner)})")
+                     f" {self.sanitize_game_text(data.their_item_owner)})))")
         await self.send_form_no_response(f"(begin {body} (none))")
 
     async def receive_item(self):
-        item = getattr(self.item_inbox[self.inbox_index], "item")
+        item_obj = self.item_inbox[self.inbox_index]
+        item = getattr(item_obj, "item")
 
         if item not in item_table:
             self.log_error(logger, f"Tried to receive item with unknown AP ID {item}!")
@@ -281,13 +295,13 @@ class Jak3ReplClient:
         if TRAP_ID_START <= item <= TRAP_ID_END:
             ok = await self.send_form_no_response(f"(ap-trap-received! '{item_symbol})")
             logger.debug(f"Sent trap {item_name}!")
+            self.queue_game_text(item_name, "TRAP", None, None)
             return ok
 
         ok = await self.send_form_no_response(f"(ap-item-received! '{item_symbol})")
         if ok:
             logger.debug(f"Sent item {item_name}!")
         return ok
-
     async def setup_options(self,
                             slot_name: str,
                             slot_seed: str,
