@@ -94,11 +94,11 @@ main_mission_table = {
     21: Jak3MissionData(mission_id=21, task_id=30, name="Complete Monk Temple tests",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak" "Light Flash Freeze", "Dark Invisibility"), player)),
+                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze", "Dark Invisibility"), player)),
     22: Jak3MissionData(mission_id=22, task_id=31, name="Travel through catacomb subrails",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak" "Light Flash Freeze"), player)),
+                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze"), player)),
     23: Jak3MissionData(mission_id=23, task_id=32, name="Explore eco mine",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
@@ -161,7 +161,7 @@ main_mission_table = {
     37: Jak3MissionData(mission_id=37, task_id=47, name="Beat gun course 2",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and state.has(("Scatter Gun", "Wave Concussor"), player)),
+                        and state.has_any(("Scatter Gun", "Wave Concussor"), player)),
     38: Jak3MissionData(mission_id=38, task_id=48, name="Break barrier with blast bot",
                         rule=lambda state, player:
                         port_to_indb(state, player)),
@@ -179,7 +179,7 @@ main_mission_table = {
                         port_to_inda(state, player)),
     42: Jak3MissionData(mission_id=42, task_id=52, name="Race for more artifacts",
                         rule=lambda state, player:
-                        state.has(("Gate Pass to Spargus", "Sand Shark"), player)),
+                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
     43: Jak3MissionData(mission_id=43, task_id=53, name="Destroy metal-pedes in nest",
                         rule=lambda state, player:
                         spargus_to_nest(state, player)),
@@ -225,7 +225,7 @@ main_mission_table = {
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
                         and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)),
-    54: Jak3MissionData(mission_id=54, task_id=64, name="	Destroy dark ship shield",
+    54: Jak3MissionData(mission_id=54, task_id=64, name="Destroy dark ship shield",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
@@ -248,26 +248,34 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_ruins(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Slam Dozer", "Sand Shark", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal",
-                                          "War Amulet #1", "War Amulet #2", "War Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"),player)),
+                        and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
+                                           "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
+                        and state.count("Dark Eco Crystal", player) >= 4
+                        and state.count("Light Eco Crystal", player) >= 4),
     59: Jak3MissionData(mission_id=59, task_id=69, name="Reach Precursor core",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Slam Dozer", "Sand Shark", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal",
-                                          "War Amulet #1", "War Amulet #2", "War Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"),player)),
+                        and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
+                                           "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
+                        and state.count("Dark Eco Crystal", player) >= 4
+                        and state.count("Light Eco Crystal", player) >= 4),
     60: Jak3MissionData(mission_id=60, task_id=70, name="Destroy dark ship",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Slam Dozer", "Sand Shark", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal",
-                                          "Amulet #1", "Amulet #2", "Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)),
+                        and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
+                                           "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
+                        and state.count("Dark Eco Crystal", player) >= 4
+                        and state.count("Light Eco Crystal", player) >= 4),
     61: Jak3MissionData(mission_id=61, task_id=71, name="Destroy final boss",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Slam Dozer", "Sand Shark", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Dark Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal", "Light Eco Crystal",
-                                          "Amulet #1", "Amulet #2", "Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)),
+                        and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
+                                           "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
+                        and state.count("Dark Eco Crystal", player) >= 4
+                        and state.count("Light Eco Crystal", player) >= 4),
 }
 
 

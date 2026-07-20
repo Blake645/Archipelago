@@ -105,7 +105,11 @@ It adds new weapons, devices and playable areas.
         data: list[tuple[int, ItemClass, int]] = []
 
         if ITEM_ID_KEY_START <= item <= ITEM_ID_KEY_END:
-            data.append((1, ItemClass.progression | ItemClass.useful, 0))
+            # Dark Eco Crystal and Light Eco Crystal need 4 copies each
+            if item == 52 or item == 53:
+                data.append((4, ItemClass.progression | ItemClass.useful, 0))
+            else:
+                data.append((1, ItemClass.progression | ItemClass.useful, 0))
         elif ITEM_ID_FILLER_START <= item <= ITEM_ID_FILLER_END:
             data.append((0, ItemClass.filler, 0))
         elif TRAP_ID_START <= item <= TRAP_ID_END:
