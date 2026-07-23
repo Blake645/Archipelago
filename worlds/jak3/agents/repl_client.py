@@ -15,7 +15,7 @@ import asyncio
 from asyncio import StreamReader, StreamWriter, Lock
 
 from NetUtils import NetworkItem
-from ..items import item_table, Jak3ItemData, TRAP_ID_START, TRAP_ID_END
+from ..items import item_table, Jak3ItemData, TRAP_ID_START, TRAP_ID_END, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END
 
 logger = logging.getLogger("Jak3ReplClient")
 
@@ -62,6 +62,7 @@ class Jak3ReplClient:
     item_inbox: dict[int, NetworkItem] = {}
     inbox_index = 0
     json_message_queue: Queue[JsonMessageData] = queue.Queue()
+    is_replaying: bool = False
 
     log_error: Callable
     log_warn: Callable
@@ -73,6 +74,7 @@ class Jak3ReplClient:
                  log_warn_callback: Callable,
                  log_success_callback: Callable,
                  log_info_callback: Callable,
+                 memr,
                  ip: str = "127.0.0.1",
                  port: int = 8181):
         self.ip = ip
@@ -82,6 +84,7 @@ class Jak3ReplClient:
         self.log_warn = log_warn_callback
         self.log_success = log_success_callback
         self.log_info = log_info_callback
+        self.memr = memr
 
     async def main_tick(self):
         if self.initiated_connect:
@@ -137,10 +140,21 @@ class Jak3ReplClient:
                 self.processed_initial_items = True
                 await self.send_connection_status("ready")
 
+        # Check if game needs item replay after save load
+        if self.memr.needs_item_replay:
+            self.inbox_index = 0
+            self.is_replaying = True
+            self.memr.needs_item_replay = False
+            await self.send_form_no_response("(set! (-> *ap-info-jak3* needs-item-replay) (the-as uint8 0))")
+
         if len(self.item_inbox) > self.inbox_index:
             await self.receive_item()
             await self.save_data()
             self.inbox_index += 1
+
+        # Clear replay flag when done
+        if self.is_replaying and self.inbox_index >= len(self.item_inbox):
+            self.is_replaying = False
 
         if not self.json_message_queue.empty():
             json_txt_data = self.json_message_queue.get_nowait()
@@ -292,6 +306,11 @@ class Jak3ReplClient:
         item_name: str = item_data.name
         item_symbol: str = item_data.symbol
 
+        # During replay, skip filler and traps
+        if self.is_replaying and (TRAP_ID_START <= item <= TRAP_ID_END or
+                                  ITEM_ID_FILLER_START <= item <= ITEM_ID_FILLER_END):
+            return True
+
         if TRAP_ID_START <= item <= TRAP_ID_END:
             ok = await self.send_form_no_response(f"(ap-trap-received! '{item_symbol})")
             logger.debug(f"Sent trap {item_name}!")
@@ -302,6 +321,7 @@ class Jak3ReplClient:
         if ok:
             logger.debug(f"Sent item {item_name}!")
         return ok
+
     async def setup_options(self,
                             slot_name: str,
                             slot_seed: str,

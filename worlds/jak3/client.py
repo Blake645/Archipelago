@@ -90,16 +90,17 @@ class Jak3Context(CommonContext):
     slot_seed: str
 
     def __init__(self, server_address: str | None, password: str | None) -> None:
-        self.repl = Jak3ReplClient(self.on_log_error,
-                                   self.on_log_warn,
-                                   self.on_log_success,
-                                   self.on_log_info)
         self.memr = Jak3MemoryReader(self.on_location_check,
                                      self.on_finish_check,
                                      self.on_log_error,
                                      self.on_log_warn,
                                      self.on_log_success,
                                      self.on_log_info)
+        self.repl = Jak3ReplClient(self.on_log_error,
+                                   self.on_log_warn,
+                                   self.on_log_success,
+                                   self.on_log_info,
+                                   self.memr)
         super().__init__(server_address, password)
 
     def run_gui(self):

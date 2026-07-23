@@ -22,7 +22,7 @@ sizeof_float = 4
 # *****************************************************************************
 # **** This number must match (-> *ap-info-jak3* version) in ap-struct.gc! ****
 # *****************************************************************************
-expected_memory_version = 4
+expected_memory_version = 6
 
 
 @dataclass
@@ -56,6 +56,8 @@ death_count_offset = offsets.define(sizeof_uint32)
 cause_of_death_offset = offsets.define(sizeof_uint8)
 deathlink_enabled_offset = offsets.define(sizeof_uint8)
 trap_duration_offset = offsets.define(sizeof_float)
+needs_item_replay_offset = offsets.define(sizeof_uint8)
+initial_replay_done_offset = offsets.define(sizeof_uint8)
 end_marker_offset = offsets.define(sizeof_uint8, 4)
 
 
@@ -75,6 +77,7 @@ class Jak3MemoryReader:
     outbox_index: int = 0
     finished_game: bool = False
     checks_per_mission: int = 1
+    needs_item_replay: bool = False  # new
 
     inform_checked_location: Callable
     inform_finished_game: Callable
@@ -257,6 +260,11 @@ class Jak3MemoryReader:
             if completed > 0 and not self.finished_game:
                 self.finished_game = True
                 self.log_success(logger, "Congratulations! You finished the game!")
+
+            # Check if game needs item replay
+            needs_replay = self.read_goal_address(needs_item_replay_offset, sizeof_uint8)
+            if needs_replay > 0:
+                self.needs_item_replay = True
 
         except (ProcessError, MemoryReadError, WinAPIError):
             msg = (f"Error reading game memory! (Did the game crash?)\n"
