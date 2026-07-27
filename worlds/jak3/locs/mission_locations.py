@@ -4,8 +4,8 @@ port_to_inda, port_to_indb, port_to_hq, port_to_ruins, any_gun, car_with_guns)
 
 
 class Jak3MissionData:
-    mission_id: int  # Mission ID is how Archipelago identifies the location.
-    task_id: int  # Task ID is how GOAL identifies the location.
+    mission_id: int
+    task_id: int
     name: str
     rule: Callable
 
@@ -20,8 +20,8 @@ class Jak3MissionData:
 
 
 class Jak3SideMissionData:
-    mission_id: int  # Mission ID is how Archipelago identifies the location.
-    task_id: int  # Task ID is how GOAL identifies the location.
+    mission_id: int
+    task_id: int
     name: str
     rule: Callable
 
@@ -35,7 +35,6 @@ class Jak3SideMissionData:
             self.rule = lambda state, player: True
 
 
-# Names for Missions are taken directly from the game
 main_mission_table = {
     # Act 1
     1: Jak3MissionData(mission_id=1, task_id=10, name="Complete arena training course"),
@@ -182,7 +181,8 @@ main_mission_table = {
                         state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
     43: Jak3MissionData(mission_id=43, task_id=53, name="Destroy metal-pedes in nest",
                         rule=lambda state, player:
-                        spargus_to_nest(state, player)),
+                        spargus_to_nest(state, player)
+                        and state.has("War Amulet #1", player)),
     44: Jak3MissionData(mission_id=44, task_id=54, name="Chase down metal head beasts",
                         rule=lambda state, player:
                         spargus_to_nest(state, player)),
@@ -195,7 +195,8 @@ main_mission_table = {
     47: Jak3MissionData(mission_id=47, task_id=57, name="Beat pillar ring challenges",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
-                        and state.has_all(("Holo Cube", "Beam Generator", "Prism", "Quantum Reflector", "JET-Board"), player)),
+                        and state.has_all(("Holo Cube", "Beam Generator", "Prism", "Quantum Reflector", "JET-Board"), player)
+                        and state.can_reach_location("Kill dark plants in forest - Check 1", player=player)),
     48: Jak3MissionData(mission_id=48, task_id=58, name="Destroy war factory defenses",
                         rule=lambda state, player:
                         port_to_hq(state, player)
@@ -205,12 +206,14 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_hq(state, player)
                         and any_gun(state, player)
-                        and state.has("Cypher Glyph", player)),
+                        and state.has("Cypher Glyph", player)
+                        and state.can_reach_location("Destroy war factory defenses - Check 1", player=player)),
     50: Jak3MissionData(mission_id=50, task_id=60, name="Beat Cyber Errol boss",
                         rule=lambda state, player:
                         port_to_hq(state, player)
                         and any_gun(state, player)
-                        and state.has("Cypher Glyph", player)),
+                        and state.has("Cypher Glyph", player)
+                        and state.can_reach_location("Explore war factory - Check 1", player=player)),
     # Act 3 (Tomb Baron Fight Complete)
     51: Jak3MissionData(mission_id=51, task_id=61, name="Rescue Seem at temple",
                         rule=lambda state, player:
@@ -224,12 +227,14 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)),
+                        and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)
+                        and state.can_reach_location("Beat pillar ring challenges - Check 1", player=player)),
     54: Jak3MissionData(mission_id=54, task_id=64, name="Destroy dark ship shield",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)),
+                        and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)
+                        and state.can_reach_location("Activate Astro-Viewer in Haven Forest", player=player)),
     55: Jak3MissionData(mission_id=55, task_id=65, name="Blow open tower door",
                         rule=lambda state, player:
                         port_to_hq(state, player)
@@ -243,7 +248,8 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_ruins(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("War Amulet #1", "War Amulet #2", "War Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)),
+                        and state.has_all(("War Amulet #1", "War Amulet #2", "War Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
+                        and state.can_reach_location("Destroy dark ship shield - Check 1", player=player)),
     58: Jak3MissionData(mission_id=58, task_id=68, name="Break through ruins",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -251,7 +257,8 @@ main_mission_table = {
                         and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
-                        and state.count("Light Eco Crystal", player) >= 4),
+                        and state.count("Light Eco Crystal", player) >= 4
+                        and state.can_reach_location("Reach catacombs via palace ruins - Check 1", player=player)),
     59: Jak3MissionData(mission_id=59, task_id=69, name="Reach Precursor core",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -259,7 +266,8 @@ main_mission_table = {
                         and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
-                        and state.count("Light Eco Crystal", player) >= 4),
+                        and state.count("Light Eco Crystal", player) >= 4
+                        and state.can_reach_location("Break through ruins - Check 1", player=player)),
     60: Jak3MissionData(mission_id=60, task_id=70, name="Destroy dark ship",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -267,7 +275,8 @@ main_mission_table = {
                         and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
-                        and state.count("Light Eco Crystal", player) >= 4),
+                        and state.count("Light Eco Crystal", player) >= 4
+                        and state.can_reach_location("Reach Precursor core - Check 1", player=player)),
     61: Jak3MissionData(mission_id=61, task_id=71, name="Destroy final boss",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -275,15 +284,14 @@ main_mission_table = {
                         and state.has_all(("Slam Dozer", "Sand Shark", "War Amulet #1", "War Amulet #2", "War Amulet #3",
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
-                        and state.count("Light Eco Crystal", player) >= 4),
+                        and state.count("Light Eco Crystal", player) >= 4
+                        and state.can_reach_location("Destroy dark ship - Check 1", player=player)),
 }
 
 
 main_tasks_to_missions = {miss.task_id: miss for _, miss in main_mission_table.items()}
 
 
-# Names of Side Missions are taken from the Fandom Jak 3 Wiki
-# ID numbers are precalculated and offset by 100 to distinguish them from main missions.
 side_mission_table = {
     # Orb Searches
     101: Jak3SideMissionData(mission_id=101, task_id=73, name=" Desert Orb Search 1",
@@ -450,14 +458,11 @@ side_mission_table = {
                              spargus_to_desert(state, player)),
     156: Jak3SideMissionData(mission_id=156, task_id=133, name="City Port Attack Side Mission",
                              rule=lambda state, player:
-                             spargus_to_port(state, player)),
+                             spargus_to_port(state, player)
+                             and state.can_reach_location("Destroy barrier with missile - Check 1", player=player)),
     157: Jak3SideMissionData(mission_id=157, task_id=134, name="Desert Rescue Side Mission",
                              rule=lambda state, player:
                              state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
-    158: Jak3SideMissionData(mission_id=158,task_id=135, name="City JET-Board Side Mission",
-                             rule=lambda state, player:
-                             port_to_inda(state, player)
-                             and state.has("JET-Board", player)),
 }
 
 
@@ -465,13 +470,9 @@ side_tasks_to_missions = {miss.task_id: miss for _, miss in side_mission_table.i
 MAX_CHECKS_PER_MISSION = 10
 
 def get_location_id(mission_id: int, check_num: int) -> int:
-    """Calculate a unique location ID for a mission check.
-    Format: mission_id * 100 + check_num (supports up to 99 checks per mission)
-    """
     return mission_id * 100 + check_num
 
 def get_all_mission_locations(checks_per_mission: int) -> dict[str, int]:
-    """Generate location name -> ID mapping for all missions with given checks per mission."""
     locations = {}
     for mission_id, mission in main_mission_table.items():
         for check in range(1, checks_per_mission + 1):
@@ -484,5 +485,4 @@ def get_all_mission_locations(checks_per_mission: int) -> dict[str, int]:
     return locations
 
 def get_max_mission_locations() -> dict[str, int]:
-    """Generate the maximum possible location set (for class-level registration)."""
     return get_all_mission_locations(MAX_CHECKS_PER_MISSION)

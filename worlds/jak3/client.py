@@ -26,7 +26,7 @@ from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui
 from NetUtils import ClientStatus
 
 # Jak imports
-from .game_id import jak3_name
+from .game_id import jak3_name, jak3_max
 from .agents.memory_reader import Jak3MemoryReader
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
@@ -173,8 +173,11 @@ class Jak3Context(CommonContext):
 
             if self.slot_concerns_self(recipient):
                 my_item_name = self.item_names.lookup_in_game(item.item)
-                # Only show filler items in messenger, important items have talker spawns
-                if item.item in item_table and item_table[item.item].classification == IC.filler:
+                jak3_item_id = item.item - jak3_max
+                in_table = jak3_item_id in item_table
+                classification = item_table[jak3_item_id].classification if in_table else None
+                # Only show filler and trap items in messenger, important items have talker spawns
+                if in_table and (classification == IC.filler or classification == IC.trap):
                     if self.slot_concerns_self(item.player):
                         my_item_finder = "MYSELF"
                     else:

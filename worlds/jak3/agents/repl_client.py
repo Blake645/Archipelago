@@ -272,24 +272,27 @@ class Jak3ReplClient:
         logger.debug(f"Sending info to the in-game messenger!")
         body = ""
         if data.my_item_name and data.my_item_finder:
-            if data.my_item_finder == "TRAP":
-                body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
-                         f" (when m (append-messages m 'trap "
-                         f" {self.sanitize_game_text(data.my_item_name)} "
-                         f" {self.sanitize_game_text('TRAP')})))")
+            is_trap = "Trap" in data.my_item_name
+            if is_trap and data.my_item_finder != "MYSELF":
+                direction = "'trap"
             elif data.my_item_finder == "MYSELF":
-                body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
-                         f" (when m (append-messages m 'found "
-                         f" {self.sanitize_game_text(data.my_item_name)} "
-                         f" {self.sanitize_game_text(data.my_item_finder)})))")
+                direction = "'found"
             else:
-                body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
-                         f" (when m (append-messages m 'recv "
-                         f" {self.sanitize_game_text(data.my_item_name)} "
-                         f" {self.sanitize_game_text(data.my_item_finder)})))")
-        if data.their_item_name and data.their_item_owner:
+                direction = "'recv"
             body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
-                     f" (when m (append-messages m 'sent "
+                     f" (when m (append-messages m {direction} "
+                     f" {self.sanitize_game_text(data.my_item_name)} "
+                     f" {self.sanitize_game_text(data.my_item_finder)})))")
+        if data.their_item_name and data.their_item_owner:
+            is_trap = "Trap" in data.their_item_name
+            if is_trap and data.their_item_owner != "MYSELF":
+                direction = "'trap"
+            elif data.their_item_owner == "MYSELF":
+                direction = "'found"
+            else:
+                direction = "'sent"
+            body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
+                     f" (when m (append-messages m {direction} "
                      f" {self.sanitize_game_text(data.their_item_name)} "
                      f" {self.sanitize_game_text(data.their_item_owner)})))")
         await self.send_form_no_response(f"(begin {body} (none))")
@@ -314,8 +317,7 @@ class Jak3ReplClient:
         if TRAP_ID_START <= item <= TRAP_ID_END:
             ok = await self.send_form_no_response(f"(ap-trap-received! '{item_symbol})")
             logger.debug(f"Sent trap {item_name}!")
-            self.queue_game_text(item_name, "TRAP", None, None)
-            return ok
+            return ok  # removed queue_game_text, handled by json_to_game_text now
 
         ok = await self.send_form_no_response(f"(ap-item-received! '{item_symbol})")
         if ok:
