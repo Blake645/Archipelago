@@ -234,7 +234,7 @@ class Jak3ReplClient:
             await self.send_form_no_response("(mi)")
             self.log_info(logger, "Waiting for compilation to finish (this may take a minute)...")
             self.waiting_for_compile = True
-            self.compile_ready_time = asyncio.get_event_loop().time() + 30
+            self.compile_ready_time = asyncio.get_event_loop().time() + 45
 
     async def print_status(self):
         gc_proc_id = str(self.goalc_process.process_id) if self.goalc_process else "None"
