@@ -234,7 +234,7 @@ main_mission_table = {
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
                         and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)
-                        and state.can_reach_location("Activate Astro-Viewer in Haven Forest", player=player)),
+                        and state.can_reach_location("Activate Astro-Viewer in Haven Forest - Check 1", player=player)),
     55: Jak3MissionData(mission_id=55, task_id=65, name="Blow open tower door",
                         rule=lambda state, player:
                         port_to_hq(state, player)

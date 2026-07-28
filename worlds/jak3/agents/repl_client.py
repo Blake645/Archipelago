@@ -284,10 +284,7 @@ class Jak3ReplClient:
                      f" {self.sanitize_game_text(data.my_item_name)} "
                      f" {self.sanitize_game_text(data.my_item_finder)})))")
         if data.their_item_name and data.their_item_owner:
-            is_trap = "Trap" in data.their_item_name
-            if is_trap and data.their_item_owner != "MYSELF":
-                direction = "'trap"
-            elif data.their_item_owner == "MYSELF":
+            if data.their_item_owner == "MYSELF":
                 direction = "'found"
             else:
                 direction = "'sent"

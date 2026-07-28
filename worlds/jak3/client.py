@@ -176,14 +176,13 @@ class Jak3Context(CommonContext):
                 jak3_item_id = item.item - jak3_max
                 in_table = jak3_item_id in item_table
                 classification = item_table[jak3_item_id].classification if in_table else None
-                # Only show filler and trap items in messenger, important items have talker spawns
                 if in_table and (classification == IC.filler or classification == IC.trap):
                     if self.slot_concerns_self(item.player):
                         my_item_finder = "MYSELF"
                     else:
                         my_item_finder = self.player_names[item.player]
                 else:
-                    my_item_name = None  # Don't show important items in messenger
+                    my_item_name = None
 
             if self.slot_concerns_self(item.player):
                 their_item_name = self.item_names.lookup_in_slot(item.item, recipient)
