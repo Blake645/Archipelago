@@ -327,7 +327,11 @@ class Jak3ReplClient:
                             trap_time: int,
                             completion_type: int,
                             completion_value: int,
-                            jak_is_jak2: int = 0) -> bool:
+                            jak_is_jak2: int = 0,
+                            randomize_bbush: int = 0,
+                            bbush_cost_get_to: int = 4,
+                            bbush_cost_race: int = 8,
+                            bbush_cost_other: int = 12) -> bool:
         sanitized_name = self.sanitize_file_text(slot_name)
         sanitized_seed = self.sanitize_file_text(slot_seed)
 
@@ -337,14 +341,22 @@ class Jak3ReplClient:
                                               f":trap-duration {trap_time}.0 "
                                               f":completion-type {completion_type} "
                                               f":completion-value {completion_value} "
-                                              f":jak-is-jak2 {jak_is_jak2} ))")
+                                              f":jak-is-jak2 {jak_is_jak2} "
+                                              f":randomize-bbush {randomize_bbush} "
+                                              f":bbush-cost-get-to {bbush_cost_get_to}.0 "
+                                              f":bbush-cost-race {bbush_cost_race}.0 "
+                                              f":bbush-cost-other {bbush_cost_other}.0 ))")
         message = (f"Setting options: \n"
                    f"   Slot Name {sanitized_name}, \n"
                    f"   Slot Seed {sanitized_seed}, \n"
                    f"   Trap Duration {trap_time}, \n"
                    f"   Goal Type {completion_type}, \n"
                    f"   Goal Value {completion_value}, \n"
-                   f"   Jak is Jak 2: {jak_is_jak2}... ")
+                   f"   Jak is Jak 2: {jak_is_jak2}, \n"
+                   f"   Randomize BBush: {randomize_bbush}, \n"
+                   f"   BBush Cost Get-To: {bbush_cost_get_to}, \n"
+                   f"   BBush Cost Race: {bbush_cost_race}, \n"
+                   f"   BBush Cost Other: {bbush_cost_other}... ")
         if ok:
             logger.debug(message + "Sent!")
         else:

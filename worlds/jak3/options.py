@@ -36,6 +36,31 @@ class JakIsJak2(Toggle):
     """Changes Jak's model to his Jak II appearance. WARNING: Shadows are a bit broken, and you won't see things like armor on Jak."""
     display_name = "Jak is Jak 2"
 
+class RandomizeBurningBushCost(Toggle):
+    """If enabled, the Skull Gem cost to start Burning Bush side missions will be randomized per mission type."""
+    display_name = "Randomize Burning Bush Cost"
+
+class BurningBushCostGetTo(Range):
+    """Skull Gem cost for Get-To Burning Bush missions (vanilla: 4). Only used if Randomize Burning Bush Cost is enabled."""
+    display_name = "Burning Bush Cost - Get To Missions"
+    range_start = 0
+    range_end = 100
+    default = 4
+
+class BurningBushCostRace(Range):
+    """Skull Gem cost for Race/Chase Burning Bush missions (vanilla: 8). Only used if Randomize Burning Bush Cost is enabled."""
+    display_name = "Burning Bush Cost - Race/Chase Missions"
+    range_start = 0
+    range_end = 100
+    default = 8
+
+class BurningBushCostOther(Range):
+    """Skull Gem cost for other Burning Bush missions (vanilla: 12). Only used if Randomize Burning Bush Cost is enabled."""
+    display_name = "Burning Bush Cost - Other Missions"
+    range_start = 0
+    range_end = 100
+    default = 12
+
 class PercentOfFillerItemsReplacedWithTraps(Range):
     """
     Set the percentage of filler to be replaced with traps. This does not affect your progressive items.
@@ -79,6 +104,10 @@ class Jak3Options(PerGameCommonOptions):
     number_of_missions_for_completion: NumberOfMissionsForCompletion
     checks_per_mission: ChecksPerMission
     jak_is_jak2: JakIsJak2
+    randomize_burning_bush_cost: RandomizeBurningBushCost
+    burning_bush_cost_get_to: BurningBushCostGetTo
+    burning_bush_cost_race: BurningBushCostRace
+    burning_bush_cost_other: BurningBushCostOther
     percent_filler_replaced_with_traps: PercentOfFillerItemsReplacedWithTraps
     trap_effect_duration: TrapEffectDuration
     trap_weights: TrapWeights

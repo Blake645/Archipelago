@@ -221,5 +221,9 @@ It adds new weapons, devices and playable areas.
             "checks_per_mission",
             "jak_is_jak2",
             "trap_effect_duration",
+            "randomize_burning_bush_cost",
+            "burning_bush_cost_get_to",
+            "burning_bush_cost_race",
+            "burning_bush_cost_other",
         )
         return options_dict

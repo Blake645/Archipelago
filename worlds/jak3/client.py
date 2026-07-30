@@ -21,17 +21,16 @@ from pymem.exception import ProcessNotFound
 import ModuleUpdate
 import Utils
 
-from BaseClasses import ItemClassification as IC
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled
 from NetUtils import ClientStatus
 
 # Jak imports
-from .game_id import jak3_name, jak3_max
+from .game_id import jak3_name
 from .agents.memory_reader import Jak3MemoryReader
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
 from .options import CompletionCondition
-from .items import item_table
+from .items import item_table, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END, TRAP_ID_START, TRAP_ID_END
 
 ModuleUpdate.update()
 logger = logging.getLogger("Jak3Client")
@@ -149,7 +148,11 @@ class Jak3Context(CommonContext):
                     slot_data.get("trap_effect_duration", 30),
                     completion_type,
                     completion_value,
-                    slot_data.get("jak_is_jak2", 0)))
+                    slot_data.get("jak_is_jak2", 0),
+                    slot_data.get("randomize_burning_bush_cost", 0),
+                    slot_data.get("burning_bush_cost_get_to", 4),
+                    slot_data.get("burning_bush_cost_race", 8),
+                    slot_data.get("burning_bush_cost_other", 12)))
 
         if cmd == "ReceivedItems":
             if not self.repl.received_initial_items and not self.repl.processed_initial_items:
@@ -171,12 +174,13 @@ class Jak3Context(CommonContext):
             item = args["item"]
             recipient = args["receiving"]
 
+            def is_filler_or_trap(item_id: int) -> bool:
+                return (ITEM_ID_FILLER_START <= item_id <= ITEM_ID_FILLER_END) or (
+                            TRAP_ID_START <= item_id <= TRAP_ID_END)
+
             if self.slot_concerns_self(recipient):
                 my_item_name = self.item_names.lookup_in_game(item.item)
-                jak3_item_id = item.item - jak3_max
-                in_table = jak3_item_id in item_table
-                classification = item_table[jak3_item_id].classification if in_table else None
-                if in_table and (classification == IC.filler or classification == IC.trap):
+                if is_filler_or_trap(item.item):
                     if self.slot_concerns_self(item.player):
                         my_item_finder = "MYSELF"
                     else:
@@ -184,12 +188,9 @@ class Jak3Context(CommonContext):
                 else:
                     my_item_name = None
 
-            if self.slot_concerns_self(item.player):
+            if self.slot_concerns_self(item.player) and not self.slot_concerns_self(recipient):
                 their_item_name = self.item_names.lookup_in_slot(item.item, recipient)
-                if self.slot_concerns_self(recipient):
-                    their_item_owner = "MYSELF"
-                else:
-                    their_item_owner = self.player_names[recipient]
+                their_item_owner = self.player_names[recipient]
 
             self.repl.queue_game_text(my_item_name, my_item_finder, their_item_name, their_item_owner)
 
