@@ -5,17 +5,20 @@ import logging
 import os
 import subprocess
 import sys
+import shlex
 
 from asyncio import Task
 from datetime import datetime
 from logging import Logger
+from shutil import which
 from typing import Awaitable
 
 # Misc imports
 import colorama
-import pymem
+from psutil import NoSuchProcess
 
-from pymem.exception import ProcessNotFound
+import PyMemoryEditor
+from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 
 # Archipelago imports
 import ModuleUpdate
@@ -25,7 +28,7 @@ from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui
 from NetUtils import ClientStatus
 
 # Jak imports
-from .game_id import jak3_name
+from .game_id import jak3_name, jak3_gk, jak3_goalc
 from .agents.memory_reader import Jak3MemoryReader
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
@@ -238,14 +241,21 @@ class Jak3Context(CommonContext):
 
     async def run_repl_loop(self):
         while True:
-            await self.repl.main_tick()
-            await asyncio.sleep(0.1)
+            try:
+                await self.repl.main_tick()
+                await asyncio.sleep(0.1)
+            # This catch re-engages the memr loop, enabling the client to re-connect on losing the process
+            except NoSuchProcess:
+                logger.debug("Compiler process lost. Restarting Compiler loop.")
 
     async def run_memr_loop(self):
         while True:
-            await self.memr.main_tick()
-            await asyncio.sleep(0.1)
-
+            try:
+                await self.memr.main_tick()
+                await asyncio.sleep(0.1)
+            # This catch re-engages the memr loop, enabling the client to re-connect on losing the process
+            except NoSuchProcess:
+                logger.debug("Memory reader process lost. Restarting Memory reader loop.")
 
 def find_root_directory(ctx: Jak3Context):
 
@@ -348,16 +358,16 @@ async def run_game(ctx: Jak3Context):
 
     gk_running = False
     try:
-        pymem.Pymem("gk.exe")
+        OpenProcess(process_name=jak3_gk)
         gk_running = True
-    except ProcessNotFound:
+    except ProcessNotFoundError:
         ctx.on_log_warn(logger, "Game not running, attempting to start.")
 
     goalc_running = False
     try:
-        pymem.Pymem("goalc.exe")
+        OpenProcess(process_name=jak3_goalc)
         goalc_running = True
-    except ProcessNotFound:
+    except ProcessNotFoundError:
         ctx.on_log_warn(logger, "Compiler not running, attempting to start.")
 
     try:
@@ -386,8 +396,8 @@ async def run_game(ctx: Jak3Context):
             ctx.on_log_error(logger, msg)
             return
 
-        gk_path = os.path.join(root_path, "gk.exe")
-        goalc_path = os.path.join(root_path, "goalc.exe")
+        gk_path = os.path.join(root_path, jak3_gk)
+        goalc_path = os.path.join(root_path, jak3_goalc)
         if not os.path.exists(gk_path) or not os.path.exists(goalc_path):
             msg = (f"The Game and Compiler could not be found in the ArchipelaGOAL root directory.\n"
                    f"Please check your host.yaml file.\n"
@@ -409,13 +419,21 @@ async def run_game(ctx: Jak3Context):
             log_path = os.path.join(Utils.user_path("logs"), f"Jak3Game_{timestamp}.txt")
             log_path = os.path.normpath(log_path)
             with open(log_path, "w") as log_file:
-                gk_process = subprocess.Popen(
-                    [gk_path, "--game", "jak3",
-                     "--config-path", config_path,
-                     "--", "-v", "-boot", "-fakeiso", "-debug"],
-                    stdout=log_file,
-                    stderr=log_file,
-                    creationflags=subprocess.CREATE_NO_WINDOW)
+                gk_args = [gk_path, "--game", "jak3",
+                 "--config-path", config_path,
+                 "--", "-v", "-boot", "-fakeiso", "-debug"]
+
+                if Utils.is_windows:
+                    gk_process = subprocess.Popen(
+                        gk_args,
+                        stdout=log_file,
+                        stderr=log_file,
+                        creationflags=subprocess.CREATE_NO_WINDOW)
+                else:
+                    gk_process = subprocess.Popen(
+                        gk_args,
+                        stdout=log_file,
+                        stderr=log_file)
 
         if not goalc_running:
             proj_path = os.path.join(root_path, "data")
@@ -455,7 +473,36 @@ async def run_game(ctx: Jak3Context):
             else:
                 goalc_args = [goalc_path, "--game", "jak3"]
 
-            goalc_process = subprocess.Popen(goalc_args, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            # Directly ripped from jak1 client
+            if Utils.is_windows:
+                goalc_process = subprocess.Popen(goalc_args, creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+            elif Utils.is_linux:
+                terminal = which('x-terminal-emulator') or which('gnome-terminal') or which('konsole') or which('xterm')
+
+                # Don't allow the terminal application to attempt loading system libraries, this can cause OpenSSL
+                # errors when launching the REPL due to version mismatches between system vs shipped libraries.
+                env = os.environ
+                if "LD_LIBRARY_PATH" in env:
+                    env = env.copy()
+                    del env["LD_LIBRARY_PATH"]
+
+                if terminal:
+                    goalc_process = subprocess.Popen([terminal, '-e', shlex.join(goalc_args)], env=env)
+                else:
+                    msg = (f"Your Linux installation does not have a supported terminal application.\n"
+                            f"We support the following options:\n"
+                            f"   x-terminal-emulator\n"
+                            f"   gnome-terminal\n"
+                            f"   konsole\n"
+                            f"   xterm\n"
+                            f"Please install one of these and try again.")
+                    ctx.on_log_error(logger, msg)
+                    return
+
+            elif Utils.is_macos:
+                terminal = [which('open'), '-W', '-a', 'Terminal.app']
+                goalc_process = subprocess.Popen([*terminal, *goalc_args])
 
     except AttributeError as e:
         if " " in e.args[0]:

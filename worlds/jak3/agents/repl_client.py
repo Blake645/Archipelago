@@ -8,14 +8,14 @@ from dataclasses import dataclass
 from queue import Queue
 from typing import Callable
 
-import pymem
-from pymem.exception import ProcessNotFound, ProcessError
+from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 
 import asyncio
 from asyncio import StreamReader, StreamWriter, Lock
 
 from NetUtils import NetworkItem
 from ..items import item_table, Jak3ItemData, TRAP_ID_START, TRAP_ID_END, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END
+from ..game_id import jak3_gk, jak3_goalc
 
 logger = logging.getLogger("Jak3ReplClient")
 
@@ -56,8 +56,8 @@ class Jak3ReplClient:
     waiting_for_compile: bool = False
     compile_ready_time: float = 0.0
 
-    gk_process: pymem.process = None
-    goalc_process: pymem.process = None
+    gk_process: OpenProcess | None = None
+    goalc_process: OpenProcess | None = None
 
     item_inbox: dict[int, NetworkItem] = {}
     inbox_index = 0
@@ -107,8 +107,8 @@ class Jak3ReplClient:
 
         if self.connected:
             try:
-                self.gk_process.read_bool(self.gk_process.base_address)
-            except ProcessError:
+                OpenProcess(process_name=jak3_gk)
+            except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
                        f"from the Archipelago Launcher.\n"
@@ -120,8 +120,8 @@ class Jak3ReplClient:
                 self.log_error(logger, msg)
                 self.connected = False
             try:
-                self.goalc_process.read_bool(self.goalc_process.base_address)
-            except ProcessError:
+                OpenProcess(process_name=jak3_goalc)
+            except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error sending data to compiler! (Did the compiler crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
                        f"from the Archipelago Launcher.\n"
@@ -191,16 +191,16 @@ class Jak3ReplClient:
 
     async def connect(self):
         try:
-            self.gk_process = pymem.Pymem("gk.exe")
-            logger.debug("Found the gk process: " + str(self.gk_process.process_id))
-        except ProcessNotFound:
+            self.gk_process = OpenProcess(process_name=jak3_gk)
+            logger.debug("Found the gk process: " + str(self.gk_process.pid))
+        except ProcessNotFoundError:
             self.log_error(logger, "Could not find the game process.")
             return
 
         try:
-            self.goalc_process = pymem.Pymem("goalc.exe")
-            logger.debug("Found the goalc process: " + str(self.goalc_process.process_id))
-        except ProcessNotFound:
+            self.goalc_process = OpenProcess(process_name=jak3_goalc)
+            logger.debug("Found the goalc process: " + str(self.goalc_process.pid))
+        except ProcessNotFoundError:
             self.log_error(logger, "Could not find the compiler process.")
             return
 
@@ -237,8 +237,8 @@ class Jak3ReplClient:
             self.compile_ready_time = asyncio.get_event_loop().time() + 45
 
     async def print_status(self):
-        gc_proc_id = str(self.goalc_process.process_id) if self.goalc_process else "None"
-        gk_proc_id = str(self.gk_process.process_id) if self.gk_process else "None"
+        gc_proc_id = str(self.goalc_process.pid) if self.goalc_process else "None"
+        gk_proc_id = str(self.gk_process.pid) if self.gk_process else "None"
         msg = (f"REPL Status:\n"
                f"   REPL process ID: {gc_proc_id}\n"
                f"   Game process ID: {gk_proc_id}\n")
@@ -249,7 +249,7 @@ class Jak3ReplClient:
                 msg += f"   Game websocket: {addr}\n"
         except ConnectionResetError:
             msg += f"   Connection to the game was lost or reset!"
-        last_item = str(getattr(self.item_inbox[self.inbox_index], "item")) if self.inbox_index else "None"
+        last_item = str(getattr(self.item_inbox[self.inbox_index], "item")) if self.inbox_index and self.inbox_index < len(self.item_inbox) else "None"
         msg += f"   Last item received: {last_item}\n"
         self.log_info(logger, msg)
 

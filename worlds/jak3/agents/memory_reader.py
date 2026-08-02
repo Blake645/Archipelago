@@ -2,12 +2,12 @@ import logging
 import struct
 from typing import ByteString, Callable
 import json
-import pymem
-from pymem import pattern
-from pymem.exception import ProcessNotFound, ProcessError, MemoryReadError, WinAPIError
+from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 from dataclasses import dataclass
 
 from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions
+
+from ..game_id import jak3_gk
 
 logger = logging.getLogger("Jak3MemoryReader")
 
@@ -71,7 +71,7 @@ class Jak3MemoryReader:
     connected: bool = False
     initiated_connect: bool = False
 
-    gk_process: pymem.process = None
+    gk_process: OpenProcess | None = None
 
     location_outbox: list[int] = []
     outbox_index: int = 0
@@ -113,8 +113,8 @@ class Jak3MemoryReader:
 
         if self.connected:
             try:
-                self.gk_process.read_bool(self.gk_process.base_address)
-            except (ProcessError, MemoryReadError, WinAPIError):
+                OpenProcess(process_name=jak3_gk)
+            except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
                        f"from the Archipelago Launcher.\n"
@@ -141,29 +141,28 @@ class Jak3MemoryReader:
 
     async def connect(self):
         try:
-            self.gk_process = pymem.Pymem("gk.exe")
-            logger.debug("Found the gk process: " + str(self.gk_process.process_id))
-        except ProcessNotFound:
+            self.gk_process = OpenProcess(process_name=jak3_gk)
+            if self.gk_process:
+                logger.debug("Found the gk process: " + str(self.gk_process.pid))
+            else:
+                return
+        except ProcessNotFoundError:
             self.log_error(logger, "Could not find the game process.")
             self.connected = False
             return
 
-        modules = list(self.gk_process.list_modules())
-        logger.debug(f"Found {len(modules)} modules to search through.")
-        for i, module in enumerate(modules):
-            marker_address = pattern.pattern_scan_module(self.gk_process.process_handle, module, self.marker)
-            if marker_address:
-                goal_pointer = marker_address + len(self.marker) + 7
-                self.goal_address = int.from_bytes(self.gk_process.read_bytes(goal_pointer, sizeof_uint64),
-                                                   byteorder="little",
-                                                   signed=False)
-                logger.debug("Found the archipelago memory address: " + str(self.goal_address))
-                await self.verify_memory_version()
-                break
-            else:
-                self.log_warn(logger, f"Could not find the Archipelago marker address in module {i}, continuing...")
+        marker_addresses = list(self.gk_process.search_by_value(bytes, len(self.marker), self.marker,
+                                                                writeable_only=True) if self.gk_process else [])
+        if len(marker_addresses) > 0:
+            goal_pointer = marker_addresses[0] + len(self.marker) + 7
+            self.goal_address = int.from_bytes(
+                self.gk_process.read_process_memory(goal_pointer, bytes, sizeof_uint64),
+                byteorder="little",
+                signed=False)
+            logger.debug("Found the archipelago memory address: " + str(self.goal_address))
+            await self.verify_memory_version()
         else:
-            self.log_warn(logger, f"Could not find the Archipelago marker address in any module!")
+            self.log_error(logger, "Could not find the Archipelago marker address!")
             self.connected = False
 
     async def verify_memory_version(self):
@@ -179,8 +178,8 @@ class Jak3MemoryReader:
                 self.log_success(logger, "The Memory Reader is ready!")
                 self.connected = True
             else:
-                raise MemoryReadError(memory_version_offset, sizeof_uint32)
-        except (ProcessError, MemoryReadError, WinAPIError):
+                raise Exception(memory_version_offset, sizeof_uint32)
+        except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
             if memory_version is None:
                 msg = (f"Could not find a version number in the OpenGOAL memory structure!\n"
                        f"   Expected Version: {str(expected_memory_version)}\n"
@@ -206,11 +205,11 @@ class Jak3MemoryReader:
             self.connected = False
 
     async def print_status(self):
-        proc_id = str(self.gk_process.process_id) if self.gk_process else "None"
+        proc_id = str(self.gk_process.pid) if self.gk_process else "None"
         last_loc = str(self.location_outbox[self.outbox_index - 1] if self.outbox_index else "None")
         msg = (f"Memory Reader Status:\n"
                f"   Game process ID: {proc_id}\n"
-               f"   Game state memory address: {str(self.goal_address)}\n"
+               f"   Game state memory address: {str(self.goal_address) if self.goal_address else 'null'}\n"
                f"   Last location checked: {last_loc}\n"
                f"   Checks per mission: {self.checks_per_mission}")
         await self.verify_memory_version()
@@ -281,8 +280,11 @@ class Jak3MemoryReader:
         return self.location_outbox
 
     def read_goal_address(self, offset: int, length: int) -> int:
+        if not (self.gk_process and self.goal_address):
+            raise Exception(memory_version_offset, sizeof_uint32)
+
         return int.from_bytes(
-            self.gk_process.read_bytes(self.goal_address + offset, length),
+            self.gk_process.read_process_memory(self.goal_address + offset, bytes, length),
             byteorder="little",
             signed=False)
 

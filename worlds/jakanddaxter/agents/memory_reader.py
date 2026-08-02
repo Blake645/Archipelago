@@ -276,7 +276,7 @@ class JakAndDaxterMemoryReader:
     async def connect(self):
         try:
             self.gk_process = OpenProcess(process_name=jak1_gk)  # The GOAL Kernel
-            logger.debug(f"Found the gk process: {self.gk_process.pid}")
+            logger.debug(f"Found the gk process: {self.gk_process.pid if self.gk_process else None}")
         except ProcessNotFoundError:
             self.log_error(logger, "Could not find the game process.")
             self.connected = False
@@ -284,7 +284,7 @@ class JakAndDaxterMemoryReader:
 
         if Utils.is_windows or Utils.is_linux:
             marker_addresses = list(self.gk_process.search_by_value(bytes, len(self.marker), self.marker,
-                                                                    writeable_only=True))
+                                                                    writeable_only=True) if self.gk_process else [])
             if len(marker_addresses) > 0:
                 # If we don't find the marker in the first loaded module, we've failed.
                 goal_pointer = marker_addresses[0] + len(self.marker) + 4
