@@ -26,7 +26,7 @@ from NetUtils import ClientStatus
 
 # Jak imports
 from .game_id import jak3_name
-from .agents.memory_reader import Jak3MemoryReader
+from .agents.memory_reader import Jak3MemoryReader, autopsy
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
 from .options import CompletionCondition
@@ -91,6 +91,8 @@ class Jak3Context(CommonContext):
     def __init__(self, server_address: str | None, password: str | None) -> None:
         self.memr = Jak3MemoryReader(self.on_location_check,
                                      self.on_finish_check,
+                                     self.on_deathlink_check,
+                                     self.on_deathlink_toggle,
                                      self.on_log_error,
                                      self.on_log_warn,
                                      self.on_log_success,
@@ -129,12 +131,8 @@ class Jak3Context(CommonContext):
         if cmd == "Connected":
             slot_data = args["slot_data"]
             completion_type = slot_data["jak_3_completion_condition"]
-            if completion_type == CompletionCondition.option_complete_specific_mission:
-                completion_value = slot_data["specific_mission_for_completion"]
-            elif completion_type == CompletionCondition.option_complete_number_of_missions:
-                completion_value = slot_data["number_of_missions_for_completion"]
-            else:
-                completion_value = 0
+            specific_mission_value = slot_data.get("specific_mission_for_completion", 71)
+            mission_count_value = slot_data.get("number_of_missions_for_completion", 60)
 
             self.memr.checks_per_mission = slot_data["checks_per_mission"]
 
@@ -147,12 +145,17 @@ class Jak3Context(CommonContext):
                     self.slot_seed[:8],
                     slot_data.get("trap_effect_duration", 30),
                     completion_type,
-                    completion_value,
+                    specific_mission_value,
+                    mission_count_value,
                     slot_data.get("jak_is_jak2", 0),
                     slot_data.get("randomize_burning_bush_cost", 0),
                     slot_data.get("burning_bush_cost_get_to", 4),
                     slot_data.get("burning_bush_cost_race", 8),
                     slot_data.get("burning_bush_cost_other", 12)))
+
+            # Tell the server if Deathlink is enabled or disabled in the in-game options.
+            # This allows us to "remember" the user's choice.
+            self.on_deathlink_toggle()
 
         if cmd == "ReceivedItems":
             if not self.repl.received_initial_items and not self.repl.processed_initial_items:
@@ -198,6 +201,12 @@ class Jak3Context(CommonContext):
         create_task_log_exception(self.json_to_game_text(args))
         super(Jak3Context, self).on_print_json(args)
 
+    # We need to do a little more than just use CommonClient's on_deathlink.
+    def on_deathlink(self, data: dict):
+        if self.memr.deathlink_enabled:
+            self.repl.received_deathlink = True
+            super().on_deathlink(data)
+
     def on_location_check(self, location_ids: list[int]):
         create_task_log_exception(self.check_locations(location_ids))
 
@@ -209,6 +218,24 @@ class Jak3Context(CommonContext):
 
     def on_finish_check(self):
         create_task_log_exception(self.ap_inform_finished_game())
+
+    # We need to do a little more than just use CommonClient's send_death.
+    async def ap_inform_deathlink(self):
+        if self.memr.deathlink_enabled:
+            player = self.player_names[self.slot] if self.slot is not None else "Jak"
+            death_text = autopsy(self.memr.cause_of_death).replace("Jak", player)
+            await self.send_death(death_text)
+            self.on_log_warn(logger, death_text)
+
+        # Reset all flags, but leave the death count alone.
+        self.memr.send_deathlink = False
+
+    def on_deathlink_check(self):
+        create_task_log_exception(self.ap_inform_deathlink())
+
+    # We don't need an ap_inform function because update_death_link solves that need.
+    def on_deathlink_toggle(self):
+        create_task_log_exception(self.update_death_link(self.memr.deathlink_enabled))
 
     def _markup_panels(self, msg: str, c: str = None):
         color = self.jsontotextparser.color_codes[c] if c else None

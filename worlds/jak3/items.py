@@ -126,7 +126,7 @@ item_table = {
     # Jak 2 Traps (IDs 75-80)
     75: Jak3ItemData(item_id=75, name="Ammo Trap", symbol="russian-roulette"),
     76: Jak3ItemData(item_id=76, name="Dark Trap", symbol="anger-issues"),
-    77: Jak3ItemData(item_id=77, name="Speed Trap", symbol="sonic-speed"),
-    78: Jak3ItemData(item_id=78, name="Slow Trap", symbol="la-traffic"),
+    77: Jak3ItemData(item_id=77, name="No Light Trap", symbol="no-light-eco"),
+    78: Jak3ItemData (item_id=78,name= "Reverse Trap", symbol="turn-right-to-go-left"),
     79: Jak3ItemData(item_id=79, name="Hero Trap", symbol="hardcore"),
 }

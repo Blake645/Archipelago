@@ -102,17 +102,17 @@ main_mission_table = {
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and state.has("JET-Board", player)
-                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer"), player)),
+                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder",), player)),
     24: Jak3MissionData(mission_id=24, task_id=33, name="Escort bomb train",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and state.has("JET-Board", player)
-                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer"), player)),
+                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder"), player)),
     25: Jak3MissionData(mission_id=25, task_id=34, name="Defeat Veger's Precursor robot",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and state.has("JET-Board", player)
-                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer"), player)),
+                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder"), player)),
     # Act 2 (Robot Fight Complete)
     26: Jak3MissionData(mission_id=26, task_id=35, name="Reach Port via sewer",
                         rule=lambda state, player:
@@ -122,7 +122,8 @@ main_mission_table = {
     27: Jak3MissionData(mission_id=27, task_id=37, name="Destroy incoming blast bots",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and any_gun(state, player)),
+                        and any_gun(state, player)
+                        and state.can_reach_location("Reach Port via sewer - Check 1", player=player)),
     28: Jak3MissionData(mission_id=28, task_id=38, name="Destroy barrier with missile",
                         rule=lambda state, player:
                         spargus_to_port(state, player)),
@@ -149,7 +150,8 @@ main_mission_table = {
     34: Jak3MissionData(mission_id=34, task_id=44, name="Destroy eco grid with Jinx",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
-                        and any_gun(state, player)),
+                        and any_gun(state, player)
+                        and state.has("Pass to Industrial Section A", player)),
     35: Jak3MissionData(mission_id=35, task_id=45, name="Hijack eco vehicle",
                         rule=lambda state, player:
                         port_to_indb(state, player)),
@@ -421,7 +423,8 @@ side_mission_table = {
     ## Ring Side Missions
     142: Jak3SideMissionData(mission_id=142, task_id=114, name="Ring Race #1 (Desert)",
                              rule=lambda state, player:
-                             spargus_to_desert(state, player)),
+                             spargus_to_desert(state, player)
+                             and state.can_reach_location("Destroy eggs in nest - Check 1", player=player)),
     143: Jak3SideMissionData(mission_id=143, task_id=115, name="Ring Race #2 (Desert)",
                              rule=lambda state, player:
                              spargus_to_desert(state, player)),
@@ -432,7 +435,7 @@ side_mission_table = {
                              port_to_hq(state, player)),
     147: Jak3SideMissionData(mission_id=147, task_id=119, name="Ring Race #6 (Industrial Section A)",
                              rule=lambda state, player:
-                             port_to_inda(state, player)
+                             port_to_indb(state, player)
                              and state.has("JET-Board", player)),
     ## Other Side Missions
     148: Jak3SideMissionData(mission_id=148, task_id=120, name="Destroy Egg Spiders (Desert)",
