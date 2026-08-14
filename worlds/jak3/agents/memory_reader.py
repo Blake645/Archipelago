@@ -64,6 +64,51 @@ end_marker_offset = offsets.define(sizeof_uint8, 4)
 def as_float(value: int) -> int:
     return int(struct.unpack('f', value.to_bytes(sizeof_float, "little"))[0])
 
+# "Jak" to be replaced by player name in the Client.
+def autopsy(cause: int) -> str:
+    if cause == 5:
+        return "Jak got taken out by a bot."
+    if cause == 6:
+        return "Jak got stung by a centipede."
+    if cause == 7:
+        return "Jak fell into an endless pit."
+    if cause == 8:
+        return "Jak instantly perished."
+    if cause == 9:
+        return "Jak took a swim in molten lava."
+    if cause == 10:
+        return "Jak melted away."
+    if cause == 11:
+        return "Jak went out with a bang."
+    if cause == 12:
+        return "Jak was caught in a massive explosion."
+    if cause == 13:
+        return "Jak died in the turret."
+    if cause == 14:
+        return "Jak got smushed."
+    if cause == 15:
+        return "Jak was struck down in an attack."
+    if cause == 16:
+        return "Jak got shocked."
+    if cause == 17:
+        return "Jak got crushed."
+    if cause == 18:
+        return "Jak died."
+    if cause == 19:
+        return "Jak got blown up by a grenade."
+    if cause == 20:
+        return "Jak drowned."
+    if cause == 21:
+        return "Jak got burned."
+    if cause == 22:
+        return "Jak burned up."
+    if cause == 23:
+        return "Jak failed to continue."
+    if cause == 24:
+        return "Jak got grabbed by a tentacle."
+    if cause == 25:
+        return "Daxter was struck down in combat."
+    return "Jak died."
 
 class Jak3MemoryReader:
     marker: ByteString
@@ -77,11 +122,18 @@ class Jak3MemoryReader:
     outbox_index: int = 0
     finished_game: bool = False
     checks_per_mission: int = 1
-    needs_item_replay: bool = False  # new
+    needs_item_replay: bool = False
+
+    # Deathlink handling
+    deathlink_enabled: bool = False
+    send_deathlink: bool = False
+    cause_of_death: int = 0
+    death_count: int = 0
 
     inform_checked_location: Callable
     inform_finished_game: Callable
     inform_died: Callable
+    inform_toggled_deathlink: Callable
 
     log_error: Callable
     log_warn: Callable
@@ -91,6 +143,8 @@ class Jak3MemoryReader:
     def __init__(self,
                  location_check_callback: Callable,
                  finish_game_callback: Callable,
+                 send_deathlink_callback: Callable,
+                 toggle_deathlink_callback: Callable,
                  log_error_callback: Callable,
                  log_warn_callback: Callable,
                  log_success_callback: Callable,
@@ -100,6 +154,8 @@ class Jak3MemoryReader:
 
         self.inform_checked_location = location_check_callback
         self.inform_finished_game = finish_game_callback
+        self.inform_died = send_deathlink_callback
+        self.inform_toggled_deathlink = toggle_deathlink_callback
 
         self.log_error = log_error_callback
         self.log_warn = log_warn_callback
@@ -129,6 +185,8 @@ class Jak3MemoryReader:
             return
 
         if self.connected:
+            old_deathlink_enabled = self.deathlink_enabled
+
             self.read_memory()
 
             if len(self.location_outbox) > self.outbox_index:
@@ -138,6 +196,13 @@ class Jak3MemoryReader:
 
             if self.finished_game:
                 self.inform_finished_game()
+
+            if old_deathlink_enabled != self.deathlink_enabled:
+                self.inform_toggled_deathlink()
+                logger.debug("Toggled DeathLink " + ("ON" if self.deathlink_enabled else "OFF"))
+
+            if self.send_deathlink:
+                self.inform_died()
 
     async def connect(self):
         try:
@@ -264,6 +329,18 @@ class Jak3MemoryReader:
             needs_replay = self.read_goal_address(needs_item_replay_offset, sizeof_uint8)
             if needs_replay > 0:
                 self.needs_item_replay = True
+
+            # Deathlink handling
+            death_count = self.read_goal_address(death_count_offset, sizeof_uint32)
+            cause_of_death = self.read_goal_address(cause_of_death_offset, sizeof_uint8)
+            if death_count > self.death_count:
+                self.cause_of_death = cause_of_death
+                self.send_deathlink = True
+                self.death_count = death_count
+
+            # Listen for any changes to this setting.
+            deathlink_flag = self.read_goal_address(deathlink_enabled_offset, sizeof_uint8)
+            self.deathlink_enabled = bool(deathlink_flag)
 
         except (ProcessError, MemoryReadError, WinAPIError):
             msg = (f"Error reading game memory! (Did the game crash?)\n"

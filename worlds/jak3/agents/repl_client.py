@@ -48,6 +48,7 @@ class Jak3ReplClient:
     lock: Lock
     connected: bool = False
     initiated_connect: bool = False
+    received_deathlink: bool = False
 
     initial_item_count = -1
     received_initial_items = False
@@ -155,6 +156,10 @@ class Jak3ReplClient:
         # Clear replay flag when done
         if self.is_replaying and self.inbox_index >= len(self.item_inbox):
             self.is_replaying = False
+
+        if self.received_deathlink:
+            await self.receive_deathlink()
+            self.received_deathlink = False
 
         if not self.json_message_queue.empty():
             json_txt_data = self.json_message_queue.get_nowait()
@@ -321,12 +326,36 @@ class Jak3ReplClient:
             logger.debug(f"Sent item {item_name}!")
         return ok
 
+    async def receive_deathlink(self) -> bool:
+        # Because it should at least be funny sometimes.
+        death_types = ["'death",
+                       "'death",
+                       "'death",
+                       "'death",
+                       "'endlessfall",
+                       "'drown-death",
+                       "'lava",
+                       "'dark-eco-pool",
+                       "'crush",
+                       "'smush",
+                       "'grenade",
+                       "'explode"]
+        chosen_death = random.choice(death_types)
+
+        ok = await self.send_form(f"(ap-deathlink-received! {chosen_death})")
+        if ok:
+            logger.debug(f"Received deathlink signal!")
+        else:
+            self.log_error(logger, f"Unable to receive deathlink signal!")
+        return ok
+
     async def setup_options(self,
                             slot_name: str,
                             slot_seed: str,
                             trap_time: int,
                             completion_type: int,
-                            completion_value: int,
+                            specific_mission_value: int,
+                            mission_count_value: int,
                             jak_is_jak2: int = 0,
                             randomize_bbush: int = 0,
                             bbush_cost_get_to: int = 4,
@@ -340,7 +369,8 @@ class Jak3ReplClient:
                                               f":slot-seed {sanitized_seed} "
                                               f":trap-duration {trap_time}.0 "
                                               f":completion-type {completion_type} "
-                                              f":completion-value {completion_value} "
+                                              f":completion-value {specific_mission_value} "
+                                              f":completion-mission-count {mission_count_value} "
                                               f":jak-is-jak2 {jak_is_jak2} "
                                               f":randomize-bbush {randomize_bbush} "
                                               f":bbush-cost-get-to {bbush_cost_get_to}.0 "
@@ -351,7 +381,8 @@ class Jak3ReplClient:
                    f"   Slot Seed {sanitized_seed}, \n"
                    f"   Trap Duration {trap_time}, \n"
                    f"   Goal Type {completion_type}, \n"
-                   f"   Goal Value {completion_value}, \n"
+                   f"   Specific Mission Value {specific_mission_value}, \n"
+                   f"   Mission Count Value {mission_count_value}, \n"
                    f"   Jak is Jak 2: {jak_is_jak2}, \n"
                    f"   Randomize BBush: {randomize_bbush}, \n"
                    f"   BBush Cost Get-To: {bbush_cost_get_to}, \n"
