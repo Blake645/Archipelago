@@ -29,8 +29,6 @@ from NetUtils import ClientStatus
 
 # Jak imports
 from .game_id import jak3_name, jak3_gk, jak3_goalc
-from .agents.memory_reader import Jak3MemoryReader
-from .game_id import jak3_name
 from .agents.memory_reader import Jak3MemoryReader, autopsy
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
