@@ -136,8 +136,8 @@ class Jak3Context(CommonContext):
             completion_type = slot_data["jak_3_completion_condition"]
             specific_mission_value = slot_data.get("specific_mission_for_completion", 71)
             mission_count_value = slot_data.get("number_of_missions_for_completion", 60)
-
             self.memr.checks_per_mission = slot_data["checks_per_mission"]
+            self.memr.location_check_mode = slot_data.get("location_check_mode", 1)
 
             if not self.repl.received_initial_items and self.repl.initial_item_count < 0:
                 self.repl.initial_item_count = 0

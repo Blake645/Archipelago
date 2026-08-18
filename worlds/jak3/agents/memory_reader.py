@@ -5,7 +5,7 @@ import json
 from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 from dataclasses import dataclass
 
-from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions
+from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions, get_dual_checks_for_mission
 
 from ..game_id import jak3_gk
 
@@ -122,6 +122,7 @@ class Jak3MemoryReader:
     outbox_index: int = 0
     finished_game: bool = False
     checks_per_mission: int = 1
+    location_check_mode: int = 1  # 1 = single check per mission, 2 = dual checks
     needs_item_replay: bool = False
 
     # Deathlink handling
@@ -276,7 +277,8 @@ class Jak3MemoryReader:
                f"   Game process ID: {proc_id}\n"
                f"   Game state memory address: {str(self.goal_address) if self.goal_address else 'null'}\n"
                f"   Last location checked: {last_loc}\n"
-               f"   Checks per mission: {self.checks_per_mission}")
+               f"   Checks per mission: {self.checks_per_mission}\n"
+               f"   Location check mode: {self.location_check_mode}")
         await self.verify_memory_version()
         self.log_info(logger, msg)
 
@@ -291,7 +293,11 @@ class Jak3MemoryReader:
                     main_mission_id = main_tasks_to_missions[raw_main_task_id].mission_id
                     mission_name = main_tasks_to_missions[raw_main_task_id].name
 
-                    for check in range(1, self.checks_per_mission + 1):
+                    checks = (get_dual_checks_for_mission(main_mission_id)
+                             if self.location_check_mode == 2
+                             else self.checks_per_mission)
+
+                    for check in range(1, checks + 1):
                         loc_id = main_mission_id * 100 + check
                         if loc_id not in self.location_outbox:
                             self.location_outbox.append(loc_id)
@@ -310,7 +316,10 @@ class Jak3MemoryReader:
                     side_mission_id = side_tasks_to_missions[raw_side_task_id].mission_id
                     side_mission_name = side_tasks_to_missions[raw_side_task_id].name
 
-                    for check in range(1, self.checks_per_mission + 1):
+                    # Side missions always have exactly 1 check in dual-check mode.
+                    checks = 1 if self.location_check_mode == 2 else self.checks_per_mission
+
+                    for check in range(1, checks + 1):
                         loc_id = side_mission_id * 100 + check
                         if loc_id not in self.location_outbox:
                             self.location_outbox.append(loc_id)

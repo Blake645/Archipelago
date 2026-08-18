@@ -8,8 +8,10 @@ class Jak3MissionData:
     task_id: int
     name: str
     rule: Callable
+    items_granted: list[str]
 
-    def __init__(self, mission_id: int, task_id: int, name: str, rule: Optional[Callable] = None):
+    def __init__(self, mission_id: int, task_id: int, name: str, rule: Optional[Callable] = None,
+                 items_granted: Optional[list[str]] = None):
         self.mission_id = mission_id
         self.task_id = task_id
         self.name = name
@@ -17,6 +19,7 @@ class Jak3MissionData:
             self.rule = rule
         else:
             self.rule = lambda state, player: True
+        self.items_granted = items_granted if items_granted is not None else []
 
 
 class Jak3SideMissionData:
@@ -37,46 +40,60 @@ class Jak3SideMissionData:
 
 main_mission_table = {
     # Act 1
-    1: Jak3MissionData(mission_id=1, task_id=10, name="Complete arena training course"),
-    2: Jak3MissionData(mission_id=2, task_id=11, name="Earn 1st war amulet"),
+    1: Jak3MissionData(mission_id=1, task_id=10, name="Complete arena training course",
+                       items_granted=["Scatter Gun"]),
+    2: Jak3MissionData(mission_id=2, task_id=11, name="Earn 1st war amulet",
+                       items_granted=["Dark Jak", "Blaster", "First War Amulet", "Gate Pass"]),
     3: Jak3MissionData(mission_id=3, task_id=12, name="Catch kanga-rats"),
-    4: Jak3MissionData(mission_id=4, task_id=13, name="Unlock satellite"),
+    4: Jak3MissionData(mission_id=4, task_id=13, name="Unlock satellite",
+                       items_granted=["Dark Eco Crystal #1"]),
     5: Jak3MissionData(mission_id=5, task_id=14, name="Learn to Drive Vehicle",
                        rule=lambda state, player:
                        state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player)),
     6: Jak3MissionData(mission_id=6, task_id=15, name="Beat Kleiver in desert race",
                        rule=lambda state, player:
-                       state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player)),
+                       state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player),
+                       items_granted=["Tough Puppy"]),
     7: Jak3MissionData(mission_id=7, task_id=16, name="Race for artifacts",
                        rule=lambda state, player:
-                       state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player)),
-    8: Jak3MissionData(mission_id=8, task_id=17, name="Beat monks in leaper race"),
+                       state.has_all(("Gate Pass to Spargus", "Tough Puppy"), player),
+                       items_granted=["Bracers Armor"]),
+    8: Jak3MissionData(mission_id=8, task_id=17, name="Beat monks in leaper race",
+                       items_granted=["Light Eco Crystal #1"]),
     9: Jak3MissionData(mission_id=9, task_id=18, name="Destroy metal head beasts",
                        rule=lambda state, player:
-                       state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
-    10: Jak3MissionData(mission_id=10, task_id=19, name="Earn 2nd war amulet"),
+                       state.has_all(("Gate Pass to Spargus", "Sand Shark"), player),
+                       items_granted=["Dark Eco Crystal #2", "Sand Shark"]),
+    10: Jak3MissionData(mission_id=10, task_id=19, name="Earn 2nd war amulet",
+                        items_granted=["Second War Amulet", "Beam Reflexor"]),
     11: Jak3MissionData(mission_id=11, task_id=20, name="Corral wild leapers",
                         rule=lambda state, player:
-                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
+                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player),
+                        items_granted=["Dune Hopper"]),
     12: Jak3MissionData(mission_id=12, task_id=21, name="Rescue wastelanders",
                         rule=lambda state, player:
-                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
+                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player),
+                        items_granted=["Dark Eco Crystal #3"]),
     13: Jak3MissionData(mission_id=13, task_id=22, name="Beat turret challenge",
                         rule=lambda state, player:
-                        state.has("Gun Turret", player)),
+                        state.has("Gun Turret", player),
+                        items_granted=["Light Eco Crystal #2"]),
     14: Jak3MissionData(mission_id=14, task_id=23, name="Defeat marauders in arena",
                         rule=lambda state, player:
-                        any_gun(state, player)),
+                        any_gun(state, player),
+                        items_granted=["Vulcan Fury"]),
     15: Jak3MissionData(mission_id=15, task_id=24, name="Destroy eggs in nest",
                         rule=lambda state, player:
-                        spargus_to_nest(state, player)),
+                        spargus_to_nest(state, player),
+                        items_granted=["Gila Stomper"]),
     16: Jak3MissionData(mission_id=16, task_id=25, name="Climb Monk Temple tower",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)),
     17: Jak3MissionData(mission_id=17, task_id=26, name="Glide to volcano",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer"), player)),
+                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer"), player),
+                        items_granted=["Dark Invisibility"]),
     18: Jak3MissionData(mission_id=18, task_id=27, name="Find satellite in volcano",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
@@ -85,24 +102,29 @@ main_mission_table = {
     19: Jak3MissionData(mission_id=19, task_id=28, name="Find oracle in Monk Temple",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_all(("Wave Concussor", "Dark Invisibility", "Light Jak", "Light Regeneration"), player)),
+                        and state.has_all(("Wave Concussor", "Dark Invisibility", "Light Jak", "Light Regeneration"), player),
+                        items_granted=["Light Jak", "Light Regeneration"]),
     20: Jak3MissionData(mission_id=20, task_id=29, name="Defend Ashelin at oasis",
                         rule=lambda state, player:
                         spargus_to_desert(state, player)
-                        and any_gun(state, player)),
+                        and any_gun(state, player),
+                        items_granted=["Jetboard", "Seal of Mar"]),
     21: Jak3MissionData(mission_id=21, task_id=30, name="Complete Monk Temple tests",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze", "Dark Invisibility"), player)),
+                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze", "Dark Invisibility"), player),
+                        items_granted=["Light Freeze"]),
     22: Jak3MissionData(mission_id=22, task_id=31, name="Travel through catacomb subrails",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze"), player)),
+                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze"), player),
+                        items_granted=["Light Shield"]),
     23: Jak3MissionData(mission_id=23, task_id=32, name="Explore eco mine",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and state.has("JET-Board", player)
-                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder",), player)),
+                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder",), player),
+                        items_granted=["Leg Armor"]),
     24: Jak3MissionData(mission_id=24, task_id=33, name="Escort bomb train",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
@@ -112,7 +134,8 @@ main_mission_table = {
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and state.has("JET-Board", player)
-                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder"), player)),
+                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder"), player),
+                        items_granted=["Arc Wielder"]),
     # Act 2 (Robot Fight Complete)
     26: Jak3MissionData(mission_id=26, task_id=35, name="Reach Port via sewer",
                         rule=lambda state, player:
@@ -123,14 +146,16 @@ main_mission_table = {
                         rule=lambda state, player:
                         spargus_to_port(state, player)
                         and any_gun(state, player)
-                        and state.can_reach_location("Reach Port via sewer - Check 1", player=player)),
+                        and main_mission_table[26].rule(state, player)),
     28: Jak3MissionData(mission_id=28, task_id=38, name="Destroy barrier with missile",
                         rule=lambda state, player:
-                        spargus_to_port(state, player)),
+                        spargus_to_port(state, player),
+                        items_granted=["Pass to Industrial Section A"]),
     29: Jak3MissionData(mission_id=29, task_id=39, name="Beat gun course 1",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and state.has_any(("Blaster", "Beam Reflexor"), player)),
+                        and state.has_any(("Blaster", "Beam Reflexor"), player),
+                        items_granted=["Gyro Burster"]),
     30: Jak3MissionData(mission_id=30, task_id=40, name="Destroy sniper cannons",
                         rule=lambda state, player:
                         port_to_inda(state, player)),
@@ -142,16 +167,19 @@ main_mission_table = {
     32: Jak3MissionData(mission_id=32, task_id=42, name="Destroy dark eco tanks",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
-                        and state.has("JET-Board", player)),
+                        and state.has("JET-Board", player),
+                        items_granted=["Dark Strike", "Pass to Metal Head Section"]),
     33: Jak3MissionData(mission_id=33, task_id=43, name="Kill dark plants in forest",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
-                        and state.has("JET-Board", player)),
+                        and state.has("JET-Board", player),
+                        items_granted=["Shoulder Armor"]),
     34: Jak3MissionData(mission_id=34, task_id=44, name="Destroy eco grid with Jinx",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
-                        and state.has("Pass to Industrial Section A", player)),
+                        and state.has("Pass to Industrial Section A", player),
+                        items_granted=["Pass to Industrial Section B", "Needle Lazer"]),
     35: Jak3MissionData(mission_id=35, task_id=45, name="Hijack eco vehicle",
                         rule=lambda state, player:
                         port_to_indb(state, player)),
@@ -162,10 +190,12 @@ main_mission_table = {
     37: Jak3MissionData(mission_id=37, task_id=47, name="Beat gun course 2",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and state.has_any(("Scatter Gun", "Wave Concussor"), player)),
+                        and state.has_any(("Scatter Gun", "Wave Concussor"), player),
+                        items_granted=["Plasmite RPG"]),
     38: Jak3MissionData(mission_id=38, task_id=48, name="Break barrier with blast bot",
                         rule=lambda state, player:
-                        port_to_indb(state, player)),
+                        port_to_indb(state, player),
+                        items_granted=["Pass to Slums/New Haven", "Peacemaker"]),
     39: Jak3MissionData(mission_id=39, task_id=49, name="Defend HQ from attack",
                         rule=lambda state, player:
                         port_to_hq(state, player)
@@ -177,28 +207,34 @@ main_mission_table = {
                         and state.has("JET-Board", player)),
     41: Jak3MissionData(mission_id=41, task_id=51, name="Find cypher in eco grid",
                         rule=lambda state, player:
-                        port_to_inda(state, player)),
+                        port_to_inda(state, player),
+                        items_granted=["Cypher Glyph"]),
     42: Jak3MissionData(mission_id=42, task_id=52, name="Race for more artifacts",
                         rule=lambda state, player:
-                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
+                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player),
+                        items_granted=["Beam Generator"]),
     43: Jak3MissionData(mission_id=43, task_id=53, name="Destroy metal-pedes in nest",
                         rule=lambda state, player:
                         spargus_to_nest(state, player)
-                        and state.has("War Amulet #1", player)),
+                        and state.has("War Amulet #1", player),
+                        items_granted=["Light Eco Crystal #3"]),
     44: Jak3MissionData(mission_id=44, task_id=54, name="Chase down metal head beasts",
                         rule=lambda state, player:
-                        spargus_to_nest(state, player)),
+                        spargus_to_nest(state, player),
+                        items_granted=["Quantum Reflector"]),
     45: Jak3MissionData(mission_id=45, task_id=55, name="Defend Spargus' front gate",
                         rule=lambda state, player:
-                        car_with_guns(state, player)),
+                        car_with_guns(state, player),
+                        items_granted=["Holo Cube"]),
     46: Jak3MissionData(mission_id=46, task_id=56, name="Take out Marauder stronghold",
                         rule=lambda state, player:
-                        spargus_to_nest(state, player)),
+                        spargus_to_nest(state, player),
+                        items_granted=["Prism"]),
     47: Jak3MissionData(mission_id=47, task_id=57, name="Beat pillar ring challenges",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and state.has_all(("Holo Cube", "Beam Generator", "Prism", "Quantum Reflector", "JET-Board"), player)
-                        and state.can_reach_location("Kill dark plants in forest - Check 1", player=player)),
+                        and main_mission_table[33].rule(state, player)),
     48: Jak3MissionData(mission_id=48, task_id=58, name="Destroy war factory defenses",
                         rule=lambda state, player:
                         port_to_hq(state, player)
@@ -209,49 +245,55 @@ main_mission_table = {
                         port_to_hq(state, player)
                         and any_gun(state, player)
                         and state.has("Cypher Glyph", player)
-                        and state.can_reach_location("Destroy war factory defenses - Check 1", player=player)),
+                        and main_mission_table[48].rule(state, player)),
     50: Jak3MissionData(mission_id=50, task_id=60, name="Beat Cyber Errol boss",
                         rule=lambda state, player:
                         port_to_hq(state, player)
                         and any_gun(state, player)
                         and state.has("Cypher Glyph", player)
-                        and state.can_reach_location("Explore war factory - Check 1", player=player)),
+                        and main_mission_table[49].rule(state, player),
+                        items_granted=["Light Eco Crystal #4", "Mass Inverter"]),
     # Act 3 (Tomb Baron Fight Complete)
     51: Jak3MissionData(mission_id=51, task_id=61, name="Rescue Seem at temple",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Dark Jak", "Dark Strike", "Light Jak", "Light Flight", "Dark Invisibility"), player)),
+                        and state.has_all(("Dark Jak", "Dark Strike", "Light Jak", "Light Flight", "Dark Invisibility"), player),
+                        items_granted=["Time Map"]),
     52: Jak3MissionData(mission_id=52, task_id=62, name="Defend Spargus from attack",
                         rule=lambda state, player:
-                        state.has_all(("War Amulet #1", "War Amulet #2", "Gun Turret"), player)),
+                        state.has_all(("War Amulet #1", "War Amulet #2", "Gun Turret"), player),
+                        items_granted=["Third War Amulet Piece", "Chest Armor"]),
     53: Jak3MissionData(mission_id=53, task_id=63, name="Activate Astro-Viewer in Haven Forest",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
                         and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)
-                        and state.can_reach_location("Beat pillar ring challenges - Check 1", player=player)),
+                        and main_mission_table[47].rule(state, player)),
     54: Jak3MissionData(mission_id=54, task_id=64, name="Destroy dark ship shield",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
                         and state.has_all(("Time Map", "Holo Cube", "Beam Generator", "Prism", "Quantum Reflector"), player)
-                        and state.can_reach_location("Activate Astro-Viewer in Haven Forest - Check 1", player=player)),
+                        and main_mission_table[53].rule(state, player)),
     55: Jak3MissionData(mission_id=55, task_id=65, name="Blow open tower door",
                         rule=lambda state, player:
                         port_to_hq(state, player)
-                        and state.has("Pass to Metal Head Section", player)),
+                        and state.has("Pass to Metal Head Section", player),
+                        items_granted=["Supernova"]),
     56: Jak3MissionData(mission_id=56, task_id=66, name="Destroy Metal Head tower",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Light Jak", "Light Flight"), player)),
+                        and state.has_all(("Light Jak", "Light Flight"), player),
+                        items_granted=["Dark Eco Crystal #4"]),
     57: Jak3MissionData(mission_id=57, task_id=67, name="Reach catacombs via palace ruins",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
                         and any_gun(state, player)
                         and state.has_all(("War Amulet #1", "War Amulet #2", "War Amulet #3", "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
-                        and state.can_reach_location("Destroy dark ship shield - Check 1", player=player)),
+                        and main_mission_table[54].rule(state, player),
+                        items_granted=["Pass to Outside Palace Ruins"]),
     58: Jak3MissionData(mission_id=58, task_id=68, name="Break through ruins",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -260,7 +302,8 @@ main_mission_table = {
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
                         and state.count("Light Eco Crystal", player) >= 4
-                        and state.can_reach_location("Reach catacombs via palace ruins - Check 1", player=player)),
+                        and main_mission_table[57].rule(state, player),
+                        items_granted=["Slam Dozer"]),
     59: Jak3MissionData(mission_id=59, task_id=69, name="Reach Precursor core",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -269,7 +312,7 @@ main_mission_table = {
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
                         and state.count("Light Eco Crystal", player) >= 4
-                        and state.can_reach_location("Break through ruins - Check 1", player=player)),
+                        and main_mission_table[58].rule(state, player)),
     60: Jak3MissionData(mission_id=60, task_id=70, name="Destroy dark ship",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -278,7 +321,7 @@ main_mission_table = {
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
                         and state.count("Light Eco Crystal", player) >= 4
-                        and state.can_reach_location("Reach Precursor core - Check 1", player=player)),
+                        and main_mission_table[59].rule(state, player)),
     61: Jak3MissionData(mission_id=61, task_id=71, name="Destroy final boss",
                         rule=lambda state, player:
                         port_to_ruins(state, player)
@@ -287,7 +330,7 @@ main_mission_table = {
                                            "JET-Board", "Light Jak", "Light Flight", "Dark Jak", "Dark Strike"), player)
                         and state.count("Dark Eco Crystal", player) >= 4
                         and state.count("Light Eco Crystal", player) >= 4
-                        and state.can_reach_location("Destroy dark ship - Check 1", player=player)),
+                        and main_mission_table[60].rule(state, player)),
 }
 
 
@@ -424,7 +467,7 @@ side_mission_table = {
     142: Jak3SideMissionData(mission_id=142, task_id=114, name="Ring Race #1 (Desert)",
                              rule=lambda state, player:
                              spargus_to_desert(state, player)
-                             and state.can_reach_location("Destroy eggs in nest - Check 1", player=player)),
+                             and main_mission_table[15].rule(state, player)),
     143: Jak3SideMissionData(mission_id=143, task_id=115, name="Ring Race #2 (Desert)",
                              rule=lambda state, player:
                              spargus_to_desert(state, player)),
@@ -462,7 +505,7 @@ side_mission_table = {
     156: Jak3SideMissionData(mission_id=156, task_id=133, name="City Port Attack Side Mission",
                              rule=lambda state, player:
                              spargus_to_port(state, player)
-                             and state.can_reach_location("Destroy barrier with missile - Check 1", player=player)),
+                             and main_mission_table[28].rule(state, player)),
     157: Jak3SideMissionData(mission_id=157, task_id=134, name="Desert Rescue Side Mission",
                              rule=lambda state, player:
                              state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
@@ -489,3 +532,19 @@ def get_all_mission_locations(checks_per_mission: int) -> dict[str, int]:
 
 def get_max_mission_locations() -> dict[str, int]:
     return get_all_mission_locations(MAX_CHECKS_PER_MISSION)
+
+def get_dual_check_mission_locations() -> dict[str, int]:
+    locations = {}
+    for mission_id, mission in main_mission_table.items():
+        locations[mission.name] = get_location_id(mission_id, 1)
+        for i, item_name in enumerate(mission.items_granted, start=2):
+            locations[item_name] = get_location_id(mission_id, i)
+    for mission_id, mission in side_mission_table.items():
+        locations[mission.name] = get_location_id(mission_id, 1)
+    return locations
+
+def get_dual_checks_for_mission(mission_id: int) -> int:
+    mission = main_mission_table.get(mission_id)
+    if mission:
+        return 1 + len(mission.items_granted)
+    return 1  # side missions, or unknown — always 1 check

@@ -24,9 +24,20 @@ class NumberOfMissionsForCompletion(Range):
     range_start = 5
     range_end = 119
     default = 60
+    
+class LocationCheckMode(Choice):
+    """Choose how location checks are distributed across missions.
+    - Single Check Per Mission: uses the "Checks Per Mission" option to determine a uniform number of checks per mission.
+    - Dual Checks: each mission has 1 check for completing it, plus 1 additional check per unique reward it grants
+    in the vanilla game."""
+    display_name = "Location Check Mode"
+    option_single_check_per_mission = 1
+    option_dual_checks = 2
+    default = 1
 
 class ChecksPerMission(Range):
-    """Set the number of Archipelago checks each mission gives."""
+    """Set the number of Archipelago checks each mission gives. Only used if Location Check Mode is set to
+    'Single Check Per Mission'."""
     display_name = "Checks Per Mission"
     range_start = 1
     range_end = 10
@@ -103,6 +114,7 @@ class Jak3Options(PerGameCommonOptions):
     specific_mission_for_completion: SpecificMissionForCompletion
     number_of_missions_for_completion: NumberOfMissionsForCompletion
     checks_per_mission: ChecksPerMission
+    location_check_mode: LocationCheckMode
     jak_is_jak2: JakIsJak2
     randomize_burning_bush_cost: RandomizeBurningBushCost
     burning_bush_cost_get_to: BurningBushCostGetTo

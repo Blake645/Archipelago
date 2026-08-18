@@ -12,7 +12,8 @@ from .items import (item_table, ITEM_ID_KEY_START, ITEM_ID_KEY_END, ITEM_ID_FILL
                     TRAP_ID_START, TRAP_ID_END, Jak3ItemData, Jak3Item)
 from .locs import (mission_locations)
 from .locs.mission_locations import (get_all_mission_locations, get_location_id, get_max_mission_locations,
-                                      main_mission_table, side_mission_table, MAX_CHECKS_PER_MISSION)
+                                      get_dual_check_mission_locations, main_mission_table, side_mission_table,
+                                      MAX_CHECKS_PER_MISSION)
 from .locations import (Jak3Location, all_locations_table)
 from .regs.region_base import Jak3Region
 
@@ -76,7 +77,7 @@ It adds new weapons, devices and playable areas.
 
     settings: ClassVar[Jak3Settings]
 
-    location_name_to_id = get_max_mission_locations()
+    location_name_to_id = {**get_max_mission_locations(), **get_dual_check_mission_locations()}
     item_name_to_id = {item_data.name: k for k, item_data in item_table.items()}
     item_name_groups = {
         "Items": {item.name for item in item_table.values()}
@@ -176,21 +177,27 @@ It adds new weapons, devices and playable areas.
         return self.random.choice(filler_item_names)
 
     def create_regions(self) -> None:
-        checks = self.options.checks_per_mission.value
-
         mission_tree_region = Jak3Region("Mission Tree", self.player, self.multiworld)
 
-        for mission_id, mission in main_mission_table.items():
-            for check in range(1, checks + 1):
-                name = f"{mission.name} - Check {check}"
-                loc_id = get_location_id(mission_id, check)
-                mission_tree_region.add_jak_mission(loc_id, name, mission.rule)
-
-        for mission_id, mission in side_mission_table.items():
-            for check in range(1, checks + 1):
-                name = f"{mission.name} - Check {check}"
-                loc_id = get_location_id(mission_id, check)
-                mission_tree_region.add_jak_mission(loc_id, name, mission.rule)
+        if self.options.location_check_mode == options.LocationCheckMode.option_dual_checks:
+            for mission_id, mission in main_mission_table.items():
+                mission_tree_region.add_jak_mission(get_location_id(mission_id, 1), mission.name, mission.rule)
+                for i, item_name in enumerate(mission.items_granted, start=2):
+                    mission_tree_region.add_jak_mission(get_location_id(mission_id, i), item_name, mission.rule)
+            for mission_id, mission in side_mission_table.items():
+                mission_tree_region.add_jak_mission(get_location_id(mission_id, 1), mission.name, mission.rule)
+        else:
+            checks = self.options.checks_per_mission.value
+            for mission_id, mission in main_mission_table.items():
+                for check in range(1, checks + 1):
+                    name = f"{mission.name} - Check {check}"
+                    loc_id = get_location_id(mission_id, check)
+                    mission_tree_region.add_jak_mission(loc_id, name, mission.rule)
+            for mission_id, mission in side_mission_table.items():
+                for check in range(1, checks + 1):
+                    name = f"{mission.name} - Check {check}"
+                    loc_id = get_location_id(mission_id, check)
+                    mission_tree_region.add_jak_mission(loc_id, name, mission.rule)
 
         self.multiworld.regions.append(mission_tree_region)
 
@@ -198,7 +205,8 @@ It adds new weapons, devices and playable areas.
             mission_id = self.completion_value
             mission = main_mission_table.get(mission_id)
             if mission:
-                target_name = f"{mission.name} - Check 1"
+                target_name = (mission.name if self.options.location_check_mode == options.LocationCheckMode.option_dual_checks
+                              else f"{mission.name} - Check 1")
                 self.multiworld.completion_condition[self.player] = lambda state: (
                     state.can_reach_location(target_name, player=self.player))
 
@@ -219,6 +227,7 @@ It adds new weapons, devices and playable areas.
             "specific_mission_for_completion",
             "number_of_missions_for_completion",
             "checks_per_mission",
+            "location_check_mode",
             "jak_is_jak2",
             "trap_effect_duration",
             "randomize_burning_bush_cost",
