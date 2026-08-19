@@ -41,7 +41,7 @@ class ChecksPerMission(Range):
     display_name = "Checks Per Mission"
     range_start = 1
     range_end = 10
-    default = 5
+    default = 3
 
 class JakIsJak2(Toggle):
     """Changes Jak's model to his Jak II appearance. WARNING: Shadows are a bit broken, and you won't see things like armor on Jak."""
