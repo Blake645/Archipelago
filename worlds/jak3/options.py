@@ -33,7 +33,7 @@ class LocationCheckMode(Choice):
     display_name = "Location Check Mode"
     option_single_check_per_mission = 1
     option_dual_checks = 2
-    default = 1
+    default = 2
 
 class ChecksPerMission(Range):
     """Set the number of Archipelago checks each mission gives. Only used if Location Check Mode is set to
