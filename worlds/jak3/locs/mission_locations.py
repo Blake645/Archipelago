@@ -145,8 +145,7 @@ main_mission_table = {
     27: Jak3MissionData(mission_id=27, task_id=37, name="Destroy incoming blast bots",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and any_gun(state, player)
-                        and main_mission_table[26].rule(state, player)),
+                        and any_gun(state, player)),
     28: Jak3MissionData(mission_id=28, task_id=38, name="Destroy barrier with missile",
                         rule=lambda state, player:
                         spargus_to_port(state, player),
@@ -262,7 +261,8 @@ main_mission_table = {
                         items_granted=["Time Map"]),
     52: Jak3MissionData(mission_id=52, task_id=62, name="Defend Spargus from attack",
                         rule=lambda state, player:
-                        state.has_all(("War Amulet #1", "War Amulet #2", "Gun Turret"), player),
+                        state.has_all(("War Amulet #1", "War Amulet #2", "Gun Turret"), player)
+                        and main_mission_table[13].rule(state, player),
                         items_granted=["Third War Amulet Piece", "Chest Armor"]),
     53: Jak3MissionData(mission_id=53, task_id=63, name="Activate Astro-Viewer in Haven Forest",
                         rule=lambda state, player:
