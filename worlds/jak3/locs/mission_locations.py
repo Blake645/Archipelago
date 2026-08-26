@@ -77,7 +77,7 @@ main_mission_table = {
     13: Jak3MissionData(mission_id=13, task_id=22, name="Beat turret challenge",
                         rule=lambda state, player:
                         state.has("Gun Turret", player),
-                        items_granted=["Light Eco Crystal #2"]),
+                        items_granted=["Gun Turret", "Light Eco Crystal #2"]),
     14: Jak3MissionData(mission_id=14, task_id=23, name="Defeat marauders in arena",
                         rule=lambda state, player:
                         any_gun(state, player),
@@ -92,13 +92,13 @@ main_mission_table = {
     17: Jak3MissionData(mission_id=17, task_id=26, name="Glide to volcano",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer"), player),
-                        items_granted=["Dark Invisibility"]),
+                        and state.has_any(("Blaster", "Beam Reflexor", "Vulcan Fury", "Arc Wielder", "Needle Lazer"), player)),
     18: Jak3MissionData(mission_id=18, task_id=27, name="Find satellite in volcano",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and any_gun(state, player)
-                        and state.has("Dark Invisibility", player)),
+                        and state.has("Dark Invisibility", player),
+                        items_granted=["Dark Invisibility"]),
     19: Jak3MissionData(mission_id=19, task_id=28, name="Find oracle in Monk Temple",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
@@ -233,7 +233,7 @@ main_mission_table = {
                         items_granted=["Holo Cube"]),
     46: Jak3MissionData(mission_id=46, task_id=56, name="Take out Marauder stronghold",
                         rule=lambda state, player:
-                        spargus_to_nest(state, player),
+                        spargus_to_monk_temple(state, player),
                         items_granted=["Prism"]),
     47: Jak3MissionData(mission_id=47, task_id=57, name="Beat pillar ring challenges",
                         rule=lambda state, player:
@@ -392,16 +392,13 @@ side_mission_table = {
                              spargus_to_desert(state, player)
                              and state.has("JET-Board", player)),
     115: Jak3SideMissionData(mission_id=115, task_id=87, name="Spargus Orb Search 1"),
-    116: Jak3SideMissionData(mission_id=116, task_id=88, name="Desert Orb Search 15",
-                             rule=lambda state, player:
-                             spargus_to_desert(state, player)
-                             and state.has("JET-Board", player)),
-    117: Jak3SideMissionData(mission_id=117, task_id=89, name="Spargus Orb Search 2"),
-    118: Jak3SideMissionData(mission_id=118, task_id=90, name="Spargus Orb Search 3"),
-    119: Jak3SideMissionData(mission_id=119, task_id=91, name="Spargus Orb Search 4"),
-    120: Jak3SideMissionData(mission_id=120, task_id=92, name="Spargus Orb Search 5"),
-    121: Jak3SideMissionData(mission_id=121, task_id=93, name="Spargus Orb Search 6"),
-    122: Jak3SideMissionData(mission_id=122, task_id=94, name="Spargus Orb Search 7"),
+    116: Jak3SideMissionData(mission_id=116, task_id=88, name="Spargus Orb Search 2"),
+    117: Jak3SideMissionData(mission_id=117, task_id=89, name="Spargus Orb Search 3"),
+    118: Jak3SideMissionData(mission_id=118, task_id=90, name="Spargus Orb Search 4"),
+    119: Jak3SideMissionData(mission_id=119, task_id=91, name="Spargus Orb Search 5"),
+    120: Jak3SideMissionData(mission_id=120, task_id=92, name="Spargus Orb Search 6"),
+    121: Jak3SideMissionData(mission_id=121, task_id=93, name="Spargus Orb Search 7"),
+    122: Jak3SideMissionData(mission_id=122, task_id=94, name="Spargus Orb Search 8"),
     123: Jak3SideMissionData(mission_id=123, task_id=95, name="City Orb Search 1 (Outside Palace Ruins Section)",
                              rule=lambda state, player:
                              port_to_ruins(state, player)),

@@ -87,7 +87,7 @@ It adds new weapons, devices and playable areas.
 
     completion_type: int
     completion_value: int
-    total_items: int = 79
+    total_items: int = 80
     total_prog_items: int = 55
     total_filler_items: int = 0
     total_trap_items: int = 0

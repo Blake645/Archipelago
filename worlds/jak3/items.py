@@ -23,7 +23,7 @@ ITEM_ID_KEY_END = 55
 ITEM_ID_FILLER_START = 56  # Filler items start at 56
 ITEM_ID_FILLER_END = 63  # Standard filler items end at 63
 TRAP_ID_START = 64  # Trap items start at 64
-TRAP_ID_END = 79  # Trap items end at 79
+TRAP_ID_END = 80  # Trap items end at 80
 
 item_table = {
     # ========== KEY/PROGRESSION ITEMS (IDs 1-55) ==========
@@ -129,4 +129,5 @@ item_table = {
     77: Jak3ItemData(item_id=77, name="No Light Trap", symbol="no-light-eco"),
     78: Jak3ItemData (item_id=78,name= "Reverse Trap", symbol="turn-right-to-go-left"),
     79: Jak3ItemData(item_id=79, name="Hero Trap", symbol="hardcore"),
+    80: Jake3ItemData(item_id=80, name="Despair Trap", symbol="emotional-damage"),
 }
