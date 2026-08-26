@@ -402,9 +402,9 @@ side_mission_table = {
     123: Jak3SideMissionData(mission_id=123, task_id=95, name="City Orb Search 1 (Outside Palace Ruins Section)",
                              rule=lambda state, player:
                              port_to_ruins(state, player)),
-    124: Jak3SideMissionData(mission_id=124, task_id=96, name="City Orb Search 2 (Outside Palace Ruins Section)",
+    124: Jak3SideMissionData(mission_id=124, task_id=96, name="City Orb Search 2 (Slums/New Haven Section)",
                              rule=lambda state, player:
-                             port_to_ruins(state, player)
+                             port_to_hq(state, player)
                              and state.has("JET-Board", player)),
     125: Jak3SideMissionData(mission_id=125, task_id=97, name="City Orb Search 3 (Outside Palace Ruins Section)",
                              rule=lambda state, player:
