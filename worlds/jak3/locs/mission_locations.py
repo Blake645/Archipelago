@@ -515,7 +515,8 @@ side_mission_table = {
                              and main_mission_table[28].rule(state, player)),
     157: Jak3SideMissionData(mission_id=157, task_id=134, name="Desert Rescue Side Mission",
                              rule=lambda state, player:
-                             state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)),
+                             state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)
+                             and main_mission_table[12].rule(state, player)),
 }
 
 
