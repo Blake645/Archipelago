@@ -5,7 +5,7 @@ import json
 from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 from dataclasses import dataclass
 
-from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions, get_dual_checks_for_mission
+from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions, get_dual_checks_for_mission, medal_ids_to_medals
 
 from ..game_id import jak3_gk
 
@@ -22,7 +22,7 @@ sizeof_float = 4
 # *****************************************************************************
 # **** This number must match (-> *ap-info-jak3* version) in ap-struct.gc! ****
 # *****************************************************************************
-expected_memory_version = 6
+expected_memory_version = 8
 
 
 @dataclass
@@ -58,6 +58,9 @@ deathlink_enabled_offset = offsets.define(sizeof_uint8)
 trap_duration_offset = offsets.define(sizeof_float)
 needs_item_replay_offset = offsets.define(sizeof_uint8)
 initial_replay_done_offset = offsets.define(sizeof_uint8)
+next_medal_index_offset = offsets.define(sizeof_uint64)
+medals_checked_offset = offsets.define(sizeof_uint32, 30)
+is_replaying_offset = offsets.define(sizeof_uint8)
 end_marker_offset = offsets.define(sizeof_uint8, 4)
 
 
@@ -294,8 +297,8 @@ class Jak3MemoryReader:
                     mission_name = main_tasks_to_missions[raw_main_task_id].name
 
                     checks = (get_dual_checks_for_mission(main_mission_id)
-                             if self.location_check_mode == 2
-                             else self.checks_per_mission)
+                              if self.location_check_mode == 2
+                              else self.checks_per_mission)
 
                     for check in range(1, checks + 1):
                         loc_id = main_mission_id * 100 + check
@@ -328,6 +331,20 @@ class Jak3MemoryReader:
                                          f" -> Check {check}"
                                          f" -> Location ID: {loc_id}"
                                          f" -> '{side_mission_name}'")
+
+            next_medal_idx = self.read_goal_address(next_medal_index_offset, sizeof_uint64)
+            for i in range(int(next_medal_idx)):
+                raw_medal_id = self.read_goal_address(medals_checked_offset + (i * sizeof_uint32),
+                                                      sizeof_uint32)
+
+                if raw_medal_id in medal_ids_to_medals:
+                    medal = medal_ids_to_medals[raw_medal_id]
+                    loc_id = medal.location_id
+                    if loc_id not in self.location_outbox:
+                        self.location_outbox.append(loc_id)
+                        logger.debug(f"Medal earned! Medal ID: {raw_medal_id}"
+                                     f" -> Location ID: {loc_id}"
+                                     f" -> '{medal.name}'")
 
             completed = self.read_goal_address(completed_offset, sizeof_uint8)
             if completed > 0 and not self.finished_game:

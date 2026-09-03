@@ -47,6 +47,11 @@ class JakIsJak2(Toggle):
     """Changes Jak's model to his Jak II appearance. WARNING: Shadows are a bit broken, and you won't see things like armor on Jak."""
     display_name = "Jak is Jak 2"
 
+class MinigameMedalChecks(Toggle):
+    """If enabled, earning bronze, silver, and gold medals in minigames becomes
+    a location check for each medal tier. This adds 3 new locations per eligible minigame."""
+    display_name = "Minigame Medal Checks"
+
 class RandomizeBurningBushCost(Toggle):
     """If enabled, the Skull Gem cost to start Burning Bush side missions will be randomized per mission type."""
     display_name = "Randomize Burning Bush Cost"
@@ -116,6 +121,7 @@ class Jak3Options(PerGameCommonOptions):
     checks_per_mission: ChecksPerMission
     location_check_mode: LocationCheckMode
     jak_is_jak2: JakIsJak2
+    minigame_medal_checks: MinigameMedalChecks
     randomize_burning_bush_cost: RandomizeBurningBushCost
     burning_bush_cost_get_to: BurningBushCostGetTo
     burning_bush_cost_race: BurningBushCostRace

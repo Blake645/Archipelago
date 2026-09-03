@@ -154,7 +154,8 @@ class Jak3Context(CommonContext):
                     slot_data.get("randomize_burning_bush_cost", 0),
                     slot_data.get("burning_bush_cost_get_to", 4),
                     slot_data.get("burning_bush_cost_race", 8),
-                    slot_data.get("burning_bush_cost_other", 12)))
+                    slot_data.get("burning_bush_cost_other", 12),
+                    slot_data.get("minigame_medal_checks", 0)))
 
             # Tell the server if Deathlink is enabled or disabled in the in-game options.
             # This allows us to "remember" the user's choice.

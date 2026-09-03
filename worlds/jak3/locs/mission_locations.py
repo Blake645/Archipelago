@@ -38,6 +38,17 @@ class Jak3SideMissionData:
             self.rule = lambda state, player: True
 
 
+class Jak3MedalData:
+    medal_id: int
+    location_id: int
+    name: str
+
+    def __init__(self, medal_id: int, location_id: int, name: str):
+        self.medal_id = medal_id
+        self.location_id = location_id
+        self.name = name
+
+
 main_mission_table = {
     # Act 1
     1: Jak3MissionData(mission_id=1, task_id=10, name="Complete arena training course",
@@ -291,7 +302,7 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Light Jak", "Light Flight"), player),
+                        and state.has(("JET-Board", player)),
                         items_granted=["Dark Eco Crystal #4"]),
     57: Jak3MissionData(mission_id=57, task_id=67, name="Reach catacombs via palace ruins",
                         rule=lambda state, player:
@@ -517,10 +528,92 @@ side_mission_table = {
                              rule=lambda state, player:
                              state.has_all(("Gate Pass to Spargus", "Sand Shark"), player)
                              and main_mission_table[12].rule(state, player)),
+    158: Jak3SideMissionData(mission_id=158, task_id=126, name="Air Time Challenge (Desert)",
+                             rule=lambda state, player:
+                             state.has_any(("Sand Shark", "Desert Screamer", "Heat Seeker", "Dust Demon"), player)
+                             and state.has("Gate Pass to Spargus", player)),
+    159: Jak3SideMissionData(mission_id=159, task_id=127, name="Total Air Time Challenge (Desert)",
+                             rule=lambda state, player:
+                             state.has_any(("Sand Shark", "Desert Screamer", "Heat Seeker", "Dust Demon"), player)
+                             and state.has("Gate Pass to Spargus", player)),
+    160: Jak3SideMissionData(mission_id=160, task_id=128, name="Jump Distance Challenge (Desert)",
+                             rule=lambda state, player:
+                             state.has_any(("Sand Shark", "Desert Screamer", "Heat Seeker", "Dust Demon"), player)
+                             and state.has("Gate Pass to Spargus", player)),
+    161: Jak3SideMissionData(mission_id=161, task_id=129, name="Total Jump Distance Challenge (Desert)",
+                             rule=lambda state, player:
+                             state.has_any(("Sand Shark", "Desert Screamer", "Heat Seeker", "Dust Demon"), player)
+                             and state.has("Gate Pass to Spargus", player)),
+    162: Jak3SideMissionData(mission_id=162, task_id=130, name="Roll Count Challenge (Desert)",
+                             rule=lambda state, player:
+                             state.has_any(("Sand Shark", "Desert Screamer", "Heat Seeker", "Dust Demon"), player)
+                             and state.has("Gate Pass to Spargus", player)),
+    163: Jak3SideMissionData(mission_id=163, task_id=137, name="Destroy Marauders Side Mission (Desert)",
+                             rule=lambda state, player:
+                             car_with_guns(state, player)),
+    164: Jak3SideMissionData(mission_id=164, task_id=136, name="JET-Board Side Mission (Industrial Section A)",
+                             rule=lambda state, player:
+                             port_to_inda(state, player)
+                             and state.has("JET-Board", player)),
 }
 
 
 side_tasks_to_missions = {miss.task_id: miss for _, miss in side_mission_table.items()}
+
+# Minigame bronze/silver/gold medal locations. Only included when the
+# Minigame Medal Checks option is enabled.
+minigame_medal_table = {
+    1: Jak3MedalData(medal_id=1, location_id=50001, name="Daxter Pac-man Minigame - Bronze Medal"),
+    2: Jak3MedalData(medal_id=2, location_id=50002, name="Daxter Pac-man Minigame - Silver Medal"),
+    3: Jak3MedalData(medal_id=3, location_id=50003, name="Daxter Pac-man Minigame - Gold Medal"),
+    4: Jak3MedalData(medal_id=4, location_id=50004, name="Blaster Gun Course - Bronze Medal"),
+    5: Jak3MedalData(medal_id=5, location_id=50005, name="Blaster Gun Course - Silver Medal"),
+    6: Jak3MedalData(medal_id=6, location_id=50006, name="Blaster Gun Course - Gold Medal"),
+    7: Jak3MedalData(medal_id=7, location_id=50007, name="Scatter Gun Course - Bronze Medal"),
+    8: Jak3MedalData(medal_id=8, location_id=50008, name="Scatter Gun Course - Silver Medal"),
+    9: Jak3MedalData(medal_id=9, location_id=50009, name="Scatter Gun Course - Gold Medal"),
+    10: Jak3MedalData(medal_id=10, location_id=50010, name="Satellite Minigame - Bronze Medal"),
+    11: Jak3MedalData(medal_id=11, location_id=50011, name="Satellite Minigame - Silver Medal"),
+    12: Jak3MedalData(medal_id=12, location_id=50012, name="Satellite Minigame - Gold Medal"),
+    13: Jak3MedalData(medal_id=13, location_id=50013, name="Gun Turret Minigame - Bronze Medal"),
+    14: Jak3MedalData(medal_id=14, location_id=50014, name="Gun Turret Minigame - Silver Medal"),
+    15: Jak3MedalData(medal_id=15, location_id=50015, name="Gun Turret Minigame - Gold Medal"),
+    16: Jak3MedalData(medal_id=16, location_id=50016, name="Air Time Challenge (Desert) - Bronze Medal"),
+    17: Jak3MedalData(medal_id=17, location_id=50017, name="Air Time Challenge (Desert) - Silver Medal"),
+    18: Jak3MedalData(medal_id=18, location_id=50018, name="Air Time Challenge (Desert - Gold Medal"),
+    19: Jak3MedalData(medal_id=19, location_id=50019, name="Total Air Time Challenge (Desert) - Bronze Medal"),
+    20: Jak3MedalData(medal_id=20, location_id=50020, name="Total Air Time Challenge (Desert) - Silver Medal"),
+    21: Jak3MedalData(medal_id=21, location_id=50021, name="Total Air Time Challenge (Desert) - Gold Medal"),
+    22: Jak3MedalData(medal_id=22, location_id=50022, name="Jump Distance Challenge (Desert) - Bronze Medal"),
+    23: Jak3MedalData(medal_id=23, location_id=50023, name="Jump Distance Challenge (Desert) - Silver Medal"),
+    24: Jak3MedalData(medal_id=24, location_id=50024, name="Jump Distance Challenge (Desert) - Gold Medal"),
+    25: Jak3MedalData(medal_id=25, location_id=50025, name="Total Jump Distance Challenge (Desert) - Bronze Medal"),
+    26: Jak3MedalData(medal_id=26, location_id=50026, name="Total Jump Distance Challenge (Desert) - Silver Medal"),
+    27: Jak3MedalData(medal_id=27, location_id=50027, name="Total Jump Distance Challenge (Desert) - Gold Medal"),
+    28: Jak3MedalData(medal_id=28, location_id=50028, name="Roll Count Challenge (Desert) - Bronze Medal"),
+    29: Jak3MedalData(medal_id=29, location_id=50029, name="Roll Count Challenge (Desert) - Silver Medal"),
+    30: Jak3MedalData(medal_id=30, location_id=50030, name="Roll Count Challenge (Desert) - Gold Medal"),
+    31: Jak3MedalData(medal_id=31, location_id=50031, name="Destroy Marauders Side Mission (Desert) - Bronze Medal"),
+    32: Jak3MedalData(medal_id=32, location_id=50032, name="Destroy Marauders Side Mission (Desert) - Silver Medal"),
+    33: Jak3MedalData(medal_id=33, location_id=50033, name="Destroy Marauders Side Mission (Desert) - Gold Medal"),
+    34: Jak3MedalData(medal_id=34, location_id=50034, name="JET-Board Side Mission (Industrial Section A) - Bronze Medal"),
+    35: Jak3MedalData(medal_id=35, location_id=50035, name="JET-Board Side Mission (Industrial Section A) - Silver Medal"),
+    36: Jak3MedalData(medal_id=36, location_id=50036, name="JET-Board Side Mission (Industrial Section A) - Gold Medal"),
+    37: Jak3MedalData(medal_id=37, location_id=50037, name="Desert Time Trial - Bronze Medal"),
+    38: Jak3MedalData(medal_id=38, location_id=50038, name="Desert Time Trial - Silver Medal"),
+    39: Jak3MedalData(medal_id=39, location_id=50039, name="Desert Time Trial - Gold Medal"),
+    40: Jak3MedalData(medal_id=40, location_id=50040, name="Desert Rally Side Mission - Bronze Medal"),
+    41: Jak3MedalData(medal_id=41, location_id=50041, name="Desert Rally Side Mission - Silver Medal"),
+    42: Jak3MedalData(medal_id=42, location_id=50042, name="Desert Rally Side Mission - Gold Medal"),
+}
+
+medal_ids_to_medals = {medal_id: medal for medal_id, medal in minigame_medal_table.items()}
+
+def get_minigame_medal_locations(medal_checks_enabled: bool) -> dict[str, int]:
+    if not medal_checks_enabled:
+        return {}
+    return {medal.name: medal.location_id for medal in minigame_medal_table.values()}
+
 MAX_CHECKS_PER_MISSION = 10
 
 def get_location_id(mission_id: int, check_num: int) -> int:

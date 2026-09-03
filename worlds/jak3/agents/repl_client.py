@@ -147,6 +147,7 @@ class Jak3ReplClient:
             self.is_replaying = True
             self.memr.needs_item_replay = False
             await self.send_form_no_response("(set! (-> *ap-info-jak3* needs-item-replay) (the-as uint8 0))")
+            await self.send_form_no_response("(set! (-> *ap-info-jak3* is-replaying) (the-as uint8 1))")
 
         if len(self.item_inbox) > self.inbox_index:
             await self.receive_item()
@@ -156,6 +157,7 @@ class Jak3ReplClient:
         # Clear replay flag when done
         if self.is_replaying and self.inbox_index >= len(self.item_inbox):
             self.is_replaying = False
+            await self.send_form_no_response("(set! (-> *ap-info-jak3* is-replaying) (the-as uint8 0))")
 
         if self.received_deathlink:
             await self.receive_deathlink()
@@ -360,7 +362,8 @@ class Jak3ReplClient:
                             randomize_bbush: int = 0,
                             bbush_cost_get_to: int = 4,
                             bbush_cost_race: int = 8,
-                            bbush_cost_other: int = 12) -> bool:
+                            bbush_cost_other: int = 12,
+                            minigame_medal_checks: int = 0) -> bool:
         sanitized_name = self.sanitize_file_text(slot_name)
         sanitized_seed = self.sanitize_file_text(slot_seed)
 
@@ -375,7 +378,8 @@ class Jak3ReplClient:
                                               f":randomize-bbush {randomize_bbush} "
                                               f":bbush-cost-get-to {bbush_cost_get_to}.0 "
                                               f":bbush-cost-race {bbush_cost_race}.0 "
-                                              f":bbush-cost-other {bbush_cost_other}.0 ))")
+                                              f":bbush-cost-other {bbush_cost_other}.0 "
+                                              f":minigame-medal-checks {minigame_medal_checks} ))")
         message = (f"Setting options: \n"
                    f"   Slot Name {sanitized_name}, \n"
                    f"   Slot Seed {sanitized_seed}, \n"
@@ -387,7 +391,8 @@ class Jak3ReplClient:
                    f"   Randomize BBush: {randomize_bbush}, \n"
                    f"   BBush Cost Get-To: {bbush_cost_get_to}, \n"
                    f"   BBush Cost Race: {bbush_cost_race}, \n"
-                   f"   BBush Cost Other: {bbush_cost_other}... ")
+                   f"   BBush Cost Other: {bbush_cost_other}, \n"
+                   f"   Minigame Medal Checks: {minigame_medal_checks}... ")
         if ok:
             logger.debug(message + "Sent!")
         else:
