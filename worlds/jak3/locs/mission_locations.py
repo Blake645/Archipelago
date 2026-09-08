@@ -302,7 +302,7 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
-                        and state.has(("JET-Board", player)),
+                        and state.has("JET-Board", player),
                         items_granted=["Dark Eco Crystal #4"]),
     57: Jak3MissionData(mission_id=57, task_id=67, name="Reach catacombs via palace ruins",
                         rule=lambda state, player:

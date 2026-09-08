@@ -344,7 +344,7 @@ class Jak3ReplClient:
                        "'explode"]
         chosen_death = random.choice(death_types)
 
-        ok = await self.send_form(f"(ap-deathlink-received! {chosen_death})")
+        ok = await self.send_form_no_response(f"(ap-deathlink-received! {chosen_death})")
         if ok:
             logger.debug(f"Received deathlink signal!")
         else:
