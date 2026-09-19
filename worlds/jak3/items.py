@@ -24,6 +24,8 @@ ITEM_ID_FILLER_START = 56  # Filler items start at 56
 ITEM_ID_FILLER_END = 63  # Standard filler items end at 63
 TRAP_ID_START = 64  # Trap items start at 64
 TRAP_ID_END = 80  # Trap items end at 80
+SECRET_ID_START = 81  # Archipelago secret unlocks start at 81
+SECRET_ID_END = 113  # Archipelago secret unlocks end at 113
 
 item_table = {
     # ========== KEY/PROGRESSION ITEMS (IDs 1-55) ==========
@@ -130,4 +132,40 @@ item_table = {
     78: Jak3ItemData (item_id=78,name= "Reverse Trap", symbol="turn-right-to-go-left"),
     79: Jak3ItemData(item_id=79, name="Hero Trap", symbol="hardcore"),
     80: Jak3ItemData(item_id=80, name="Despair Trap", symbol="emotional-damage"),
+
+    # ========== ARCHIPELAGO SECRETS (IDs 81-113) ==========
+    81: Jak3ItemData(item_id=81, name="Secret - Increased Red Ammo Capacity", symbol="secret-gun-ammo-red"),
+    82: Jak3ItemData(item_id=82, name="Secret - Increased Yellow Ammo Capacity", symbol="secret-gun-ammo-yellow"),
+    83: Jak3ItemData(item_id=83, name="Secret - Increased Blue Ammo Capacity", symbol="secret-gun-ammo-blue"),
+    84: Jak3ItemData(item_id=84, name="Secret - Increased Dark Ammo Capacity", symbol="secret-gun-ammo-dark"),
+    85: Jak3ItemData(item_id=85, name="Secret - Blaster Damage Upgrade", symbol="secret-gun-yellow-1"),
+    86: Jak3ItemData(item_id=86, name="Secret - Scatter Gun Rate-of-Fire Upgrade", symbol="secret-gun-red-1"),
+    87: Jak3ItemData(item_id=87, name="Secret - Vulcan Fury Damage Upgrade", symbol="secret-gun-blue-1"),
+    88: Jak3ItemData(item_id=88, name="Secret - Peace Maker Increased Radius", symbol="secret-gun-dark-1"),
+    89: Jak3ItemData(item_id=89, name="Secret - Reflexor Increased Deflections", symbol="secret-gun-yellow-2"),
+    90: Jak3ItemData(item_id=90, name="Secret - Concussor Damage Upgrade", symbol="secret-gun-red-2"),
+    91: Jak3ItemData(item_id=91, name="Secret - Arc Wielder Robot Shock", symbol="secret-gun-blue-2"),
+    92: Jak3ItemData(item_id=92, name="Secret - Mass Inverter Duration Upgrade", symbol="secret-gun-dark-2"),
+    93: Jak3ItemData(item_id=93, name="Secret - Gyro Burster Duration Upgrade", symbol="secret-gun-yellow-3"),
+    94: Jak3ItemData(item_id=94, name="Secret - Plasmite RPG Ammo Efficiency", symbol="secret-gun-red-3"),
+    95: Jak3ItemData(item_id=95, name="Secret - Needle Lazer Ammo Efficiency", symbol="secret-gun-blue-3"),
+    96: Jak3ItemData(item_id=96, name="Secret - Super Nova Ammo Efficiency", symbol="secret-gun-dark-3"),
+    97: Jak3ItemData(item_id=97, name="Secret - Upgrade Vehicle Toughness", symbol="secret-vehicle-hit-points"),
+    98: Jak3ItemData(item_id=98, name="Secret - Unlimited Vehicle Turbos", symbol="secret-unlimited-turbos"),
+    99: Jak3ItemData(item_id=99, name="Secret - Toggle Jak's Goatee", symbol="secret-toggle-beard"),
+    100: Jak3ItemData(item_id=100, name="Secret - Big Head Mode", symbol="secret-big-head"),
+    101: Jak3ItemData(item_id=101, name="Secret - Small Head Mode", symbol="secret-little-head"),
+    102: Jak3ItemData(item_id=102, name="Secret - Kleiver's Diaper", symbol="secret-kleever-diaper"),
+    103: Jak3ItemData(item_id=103, name="Secret - Bad Weather", symbol="secret-bad-weather"),
+    104: Jak3ItemData(item_id=104, name="Secret - Mirror World", symbol="secret-hflip-screen"),
+    105: Jak3ItemData(item_id=105, name="Secret - Fast Movies", symbol="secret-fast-movie"),
+    106: Jak3ItemData(item_id=106, name="Secret - Slow Movies", symbol="secret-slow-movie"),
+    107: Jak3ItemData(item_id=107, name="Secret - Turbo JetBoard in Desert", symbol="secret-board-fast"),
+    108: Jak3ItemData(item_id=108, name="Secret - Dark Jak Homing Attacks", symbol="secret-darkjak-tracking"),
+    109: Jak3ItemData(item_id=109, name="Secret - Dark Jak Invisibility on Triangle Button",
+                      symbol="secret-button-invis"),
+    110: Jak3ItemData(item_id=110, name="Secret - Unlimited Ammo", symbol="secret-endless-ammo"),
+    111: Jak3ItemData(item_id=111, name="Secret - Invulnerability", symbol="secret-invulnerable"),
+    112: Jak3ItemData(item_id=112, name="Secret - Unlimited Dark Jak", symbol="secret-endless-dark"),
+    113: Jak3ItemData(item_id=113, name="Secret - Unlimited Light Jak", symbol="secret-endless-light"),
 }

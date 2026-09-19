@@ -280,6 +280,7 @@ class Jak3ReplClient:
         body = ""
         if data.my_item_name and data.my_item_finder:
             is_trap = "Trap" in data.my_item_name
+            is_filler = any(f in data.my_item_name for f in ("Pill", "Ammo", "Gems", "Health Pack"))
             if is_trap and data.my_item_finder != "MYSELF":
                 direction = "'trap"
             elif data.my_item_finder == "MYSELF":
@@ -289,8 +290,10 @@ class Jak3ReplClient:
             body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
                      f" (when m (append-messages m {direction} "
                      f" {self.sanitize_game_text(data.my_item_name)} "
-                     f" {self.sanitize_game_text(data.my_item_finder)})))")
+                     f" {self.sanitize_game_text(data.my_item_finder)} "
+                     f" {'#t' if is_filler else '#f'})))")
         if data.their_item_name and data.their_item_owner:
+            is_filler_theirs = any(f in data.their_item_name for f in ("Pill", "Ammo", "Gems", "Health Pack"))
             if data.their_item_owner == "MYSELF":
                 direction = "'found"
             else:
@@ -298,7 +301,8 @@ class Jak3ReplClient:
             body += (f" (let ((m (the ap-messenger (process-by-name \"ap-messenger\" *active-pool*)))) "
                      f" (when m (append-messages m {direction} "
                      f" {self.sanitize_game_text(data.their_item_name)} "
-                     f" {self.sanitize_game_text(data.their_item_owner)})))")
+                     f" {self.sanitize_game_text(data.their_item_owner)} "
+                     f" {'#t' if is_filler_theirs else '#f'})))")
         await self.send_form_no_response(f"(begin {body} (none))")
 
     async def receive_item(self):

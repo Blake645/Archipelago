@@ -49,6 +49,16 @@ class Jak3MedalData:
         self.name = name
 
 
+class Jak3SecretData:
+    secret_id: int
+    location_id: int
+    name: str
+
+    def __init__(self, secret_id: int, location_id: int, name: str):
+        self.secret_id = secret_id
+        self.location_id = location_id
+        self.name = name
+
 main_mission_table = {
     # Act 1
     1: Jak3MissionData(mission_id=1, task_id=10, name="Complete arena training course",
@@ -607,6 +617,46 @@ minigame_medal_table = {
     42: Jak3MedalData(medal_id=42, location_id=50042, name="Desert Rally Side Mission - Gold Medal"),
 }
 
+secrets_table = {
+    1: Jak3SecretData(secret_id=1, location_id=50100, name="Buy Secret - Increased Red Ammo Capacity"),
+    2: Jak3SecretData(secret_id=2, location_id=50101, name="Buy Secret - Increased Yellow Ammo Capacity"),
+    3: Jak3SecretData(secret_id=3, location_id=50102, name="Buy Secret - Increased Blue Ammo Capacity"),
+    4: Jak3SecretData(secret_id=4, location_id=50103, name="Buy Secret - Increased Dark Ammo Capacity"),
+    5: Jak3SecretData(secret_id=5, location_id=50104, name="Buy Secret - Blaster Damage Upgrade"),
+    6: Jak3SecretData(secret_id=6, location_id=50105, name="Buy Secret - Scatter Gun Rate-of-Fire Upgrade"),
+    7: Jak3SecretData(secret_id=7, location_id=50106, name="Buy Secret - Vulcan Fury Damage Upgrade"),
+    8: Jak3SecretData(secret_id=8, location_id=50107, name="Buy Secret - Peace Maker Increased Radius"),
+    9: Jak3SecretData(secret_id=9, location_id=50108, name="Buy Secret - Reflexor Increased Deflections"),
+    10: Jak3SecretData(secret_id=10, location_id=50109, name="Buy Secret - Concussor Damage Upgrade"),
+    11: Jak3SecretData(secret_id=11, location_id=50110, name="Buy Secret - Arc Wielder Robot Shock"),
+    12: Jak3SecretData(secret_id=12, location_id=50111, name="Buy Secret - Mass Inverter Duration Upgrade"),
+    13: Jak3SecretData(secret_id=13, location_id=50112, name="Buy Secret - Gyro Burster Duration Upgrade"),
+    14: Jak3SecretData(secret_id=14, location_id=50113, name="Buy Secret - Plasmite RPG Ammo Efficiency"),
+    15: Jak3SecretData(secret_id=15, location_id=50114, name="Buy Secret - Needle Lazer Ammo Efficiency"),
+    16: Jak3SecretData(secret_id=16, location_id=50115, name="Buy Secret - Super Nova Ammo Efficiency"),
+    17: Jak3SecretData(secret_id=17, location_id=50116, name="Buy Secret - Upgrade Vehicle Toughness"),
+    18: Jak3SecretData(secret_id=18, location_id=50117, name="Buy Secret - Unlimited Vehicle Turbos"),
+    19: Jak3SecretData(secret_id=19, location_id=50118, name="Buy Secret - Toggle Jak's Goatee"),
+    20: Jak3SecretData(secret_id=20, location_id=50119, name="Buy Secret - Big Head Mode"),
+    21: Jak3SecretData(secret_id=21, location_id=50120, name="Buy Secret - Small Head Mode"),
+    22: Jak3SecretData(secret_id=22, location_id=50121, name="Buy Secret - Kleiver's Diaper"),
+    23: Jak3SecretData(secret_id=23, location_id=50122, name="Buy Secret - Bad Weather"),
+    24: Jak3SecretData(secret_id=24, location_id=50123, name="Buy Secret - Mirror World"),
+    25: Jak3SecretData(secret_id=25, location_id=50124, name="Buy Secret - Fast Movies"),
+    26: Jak3SecretData(secret_id=26, location_id=50125, name="Buy Secret - Slow Movies"),
+    27: Jak3SecretData(secret_id=27, location_id=50126, name="Buy Secret - Turbo JetBoard in Desert"),
+    28: Jak3SecretData(secret_id=28, location_id=50127, name="Buy Secret - Dark Jak Homing Attacks"),
+    29: Jak3SecretData(secret_id=29, location_id=50128, name="Buy Secret - Dark Jak Invisibility on Triangle Button"),
+    30: Jak3SecretData(secret_id=30, location_id=50129, name="Buy Secret - Unlimited Ammo"),
+    31: Jak3SecretData(secret_id=31, location_id=50130, name="Buy Secret - Invulnerability"),
+    32: Jak3SecretData(secret_id=32, location_id=50131, name="Buy Secret - Unlimited Dark Jak"),
+    33: Jak3SecretData(secret_id=33, location_id=50132, name="Buy Secret - Unlimited Light Jak"),
+}
+
+secret_ids_to_secrets = {secret_id: secret for secret_id, secret in secrets_table.items()}
+
+def get_secret_locations() -> dict[str, int]:
+    return {secret.name: secret.location_id for secret in secrets_table.values()}
 medal_ids_to_medals = {medal_id: medal for medal_id, medal in minigame_medal_table.items()}
 
 def get_minigame_medal_locations(medal_checks_enabled: bool) -> dict[str, int]:

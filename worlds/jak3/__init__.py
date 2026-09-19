@@ -9,11 +9,11 @@ from typing import cast, ClassVar, Any
 from . import options
 from .game_id import jak3_name, jak3_max
 from .items import (item_table, ITEM_ID_KEY_START, ITEM_ID_KEY_END, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END,
-                    TRAP_ID_START, TRAP_ID_END, Jak3ItemData, Jak3Item)
+                    TRAP_ID_START, TRAP_ID_END, SECRET_ID_START, SECRET_ID_END, Jak3ItemData, Jak3Item)
 from .locs import (mission_locations)
 from .locs.mission_locations import (get_all_mission_locations, get_location_id, get_max_mission_locations,
                                       get_dual_check_mission_locations, main_mission_table, side_mission_table,
-                                      MAX_CHECKS_PER_MISSION, get_minigame_medal_locations)
+                                      MAX_CHECKS_PER_MISSION, get_minigame_medal_locations, get_secret_locations)
 from .locations import (Jak3Location, all_locations_table)
 from .regs.region_base import Jak3Region
 
@@ -77,7 +77,8 @@ It adds new weapons, devices and playable areas.
 
     settings: ClassVar[Jak3Settings]
 
-    location_name_to_id = {**get_max_mission_locations(), **get_dual_check_mission_locations(), **get_minigame_medal_locations(True),}
+    location_name_to_id = {**get_max_mission_locations(), **get_dual_check_mission_locations(),
+                           **get_minigame_medal_locations(True), **get_secret_locations(), }
     item_name_to_id = {item_data.name: k for k, item_data in item_table.items()}
     item_name_groups = {
         "Items": {item.name for item in item_table.values()}
@@ -103,23 +104,29 @@ It adds new weapons, devices and playable areas.
 
     @staticmethod
     def item_data_helper(item: int) -> list[tuple[int, ItemClass, int]]:
+        # count,num,classification
         data: list[tuple[int, ItemClass, int]] = []
 
+        # Determine item classification based on ID ranges
         if ITEM_ID_KEY_START <= item <= ITEM_ID_KEY_END:
-            # Dark Eco Crystal and Light Eco Crystal need 4 copies each
-            if item == 52 or item == 53:
-                data.append((4, ItemClass.progression | ItemClass.useful, 0))
-            else:
-                data.append((1, ItemClass.progression | ItemClass.useful, 0))
+            # Key/progression items
+            data.append((1, ItemClass.progression | ItemClass.useful, 0))
         elif ITEM_ID_FILLER_START <= item <= ITEM_ID_FILLER_END:
+            # Filler items (will be made manually)
             data.append((0, ItemClass.filler, 0))
         elif TRAP_ID_START <= item <= TRAP_ID_END:
+            # Trap items (their own table) (will also be made manually)
             data.append((0, ItemClass.trap, 0))
+        elif SECRET_ID_START <= item <= SECRET_ID_END:
+            # Archipelago secret unlocks — optional QoL/cosmetic, not required for reachability
+            data.append((1, ItemClass.useful, 0))
         else:
+            # If we try to make items with ID's outside defined ranges, something has gone wrong
             raise KeyError(f"Tried to fill item pool with unknown ID {item}. Valid ranges: "
                            f"key items ({ITEM_ID_KEY_START}-{ITEM_ID_KEY_END}), "
-                           f"filler items ({ITEM_ID_FILLER_START}-{ITEM_ID_FILLER_END}), "
-                           f"trap items ({TRAP_ID_START}-{TRAP_ID_END})")
+                           f"filler items ({ITEM_ID_FILLER_START}-{ITEM_ID_FILLER_END})"
+                           f"trap items ({TRAP_ID_START}-{TRAP_ID_END})"
+                           f"secret items ({SECRET_ID_START}-{SECRET_ID_END})")
         return data
 
     def create_items(self) -> None:
@@ -260,6 +267,10 @@ It adds new weapons, devices and playable areas.
                 "Desert Rally Side Mission - Gold Medal": rally_mission.rule,
             }
 
+            # Secrets menu purchases — always active, no toggle, no access rule
+            for name, loc_id in get_secret_locations().items():
+                mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
+
             for name, loc_id in get_minigame_medal_locations(True).items():
                 rule = medal_rules.get(name, lambda state, player: True)
                 mission_tree_region.add_jak_mission(loc_id, name, rule)
@@ -281,6 +292,9 @@ It adds new weapons, devices and playable areas.
                 completed_count = 0
                 for mid, miss in main_mission_table.items():
                     if miss.rule(state, player):
+                        completed_count += 1
+                for sid, side_miss in side_mission_table.items():
+                    if side_miss.rule(state, player):
                         completed_count += 1
                 return completed_count >= self.completion_value
 

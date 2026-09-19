@@ -33,7 +33,7 @@ from .agents.memory_reader import Jak3MemoryReader, autopsy
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
 from .options import CompletionCondition
-from .items import item_table, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END, TRAP_ID_START, TRAP_ID_END
+from .items import item_table, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END, TRAP_ID_START, TRAP_ID_END, SECRET_ID_START, SECRET_ID_END
 
 ModuleUpdate.update()
 logger = logging.getLogger("Jak3Client")
@@ -183,7 +183,8 @@ class Jak3Context(CommonContext):
 
             def is_filler_or_trap(item_id: int) -> bool:
                 return (ITEM_ID_FILLER_START <= item_id <= ITEM_ID_FILLER_END) or (
-                            TRAP_ID_START <= item_id <= TRAP_ID_END)
+                        TRAP_ID_START <= item_id <= TRAP_ID_END) or (
+                        SECRET_ID_START <= item_id <= SECRET_ID_END)
 
             if self.slot_concerns_self(recipient):
                 my_item_name = self.item_names.lookup_in_game(item.item)

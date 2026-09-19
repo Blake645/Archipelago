@@ -5,7 +5,7 @@ import json
 from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 from dataclasses import dataclass
 
-from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions, get_dual_checks_for_mission, medal_ids_to_medals
+from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions, get_dual_checks_for_mission, medal_ids_to_medals, secret_ids_to_secrets
 
 from ..game_id import jak3_gk
 
@@ -61,6 +61,8 @@ initial_replay_done_offset = offsets.define(sizeof_uint8)
 next_medal_index_offset = offsets.define(sizeof_uint64)
 medals_checked_offset = offsets.define(sizeof_uint32, 30)
 is_replaying_offset = offsets.define(sizeof_uint8)
+next_secret_index_offset = offsets.define(sizeof_uint64)
+secrets_checked_offset = offsets.define(sizeof_uint32, 40)
 end_marker_offset = offsets.define(sizeof_uint8, 4)
 
 
@@ -345,6 +347,20 @@ class Jak3MemoryReader:
                         logger.debug(f"Medal earned! Medal ID: {raw_medal_id}"
                                      f" -> Location ID: {loc_id}"
                                      f" -> '{medal.name}'")
+
+            next_secret_idx = self.read_goal_address(next_secret_index_offset, sizeof_uint64)
+            for i in range(int(next_secret_idx)):
+                raw_secret_id = self.read_goal_address(secrets_checked_offset + (i * sizeof_uint32),
+                                                       sizeof_uint32)
+
+                if raw_secret_id in secret_ids_to_secrets:
+                    secret = secret_ids_to_secrets[raw_secret_id]
+                    loc_id = secret.location_id
+                    if loc_id not in self.location_outbox:
+                        self.location_outbox.append(loc_id)
+                        logger.debug(f"Secret bought! Secret ID: {raw_secret_id}"
+                                     f" -> Location ID: {loc_id}"
+                                     f" -> '{secret.name}'")
 
             completed = self.read_goal_address(completed_offset, sizeof_uint8)
             if completed > 0 and not self.finished_game:
