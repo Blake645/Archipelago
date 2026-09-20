@@ -43,9 +43,6 @@ class ChecksPerMission(Range):
     range_end = 10
     default = 3
 
-class JakIsJak2(Toggle):
-    """Changes Jak's model to his Jak II appearance. WARNING: Shadows are a bit broken, and you won't see things like armor on Jak."""
-    display_name = "Jak is Jak 2"
 
 class MinigameMedalChecks(Toggle):
     """If enabled, earning bronze, silver, and gold medals in minigames becomes
@@ -58,7 +55,7 @@ class RandomizeBurningBushCost(Toggle):
 
 class BurningBushCostGetTo(Range):
     """Skull Gem cost for Get-To Burning Bush missions (vanilla: 4). Only used if Randomize Burning Bush Cost is enabled."""
-    display_name = "Burning Bush Cost - Get To Missions"
+    display_name = "Burning Bush Cost - Find Orb Missions"
     range_start = 0
     range_end = 100
     default = 4
@@ -76,6 +73,10 @@ class BurningBushCostOther(Range):
     range_start = 0
     range_end = 100
     default = 12
+
+class JakIsJak2(Toggle):
+    """Changes Jak's model to his Jak II appearance. WARNING: Shadows are a bit broken, and you won't see things like armor on Jak."""
+    display_name = "Jak is Jak 2"
 
 class PercentOfFillerItemsReplacedWithTraps(Range):
     """
@@ -120,12 +121,12 @@ class Jak3Options(PerGameCommonOptions):
     number_of_missions_for_completion: NumberOfMissionsForCompletion
     checks_per_mission: ChecksPerMission
     location_check_mode: LocationCheckMode
-    jak_is_jak2: JakIsJak2
     minigame_medal_checks: MinigameMedalChecks
     randomize_burning_bush_cost: RandomizeBurningBushCost
     burning_bush_cost_get_to: BurningBushCostGetTo
     burning_bush_cost_race: BurningBushCostRace
     burning_bush_cost_other: BurningBushCostOther
+    jak_is_jak2: JakIsJak2
     percent_filler_replaced_with_traps: PercentOfFillerItemsReplacedWithTraps
     trap_effect_duration: TrapEffectDuration
     trap_weights: TrapWeights
