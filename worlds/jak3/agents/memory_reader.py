@@ -5,7 +5,10 @@ import json
 from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 from dataclasses import dataclass
 
-from worlds.jak3.locs.mission_locations import main_tasks_to_missions, side_tasks_to_missions, get_dual_checks_for_mission, medal_ids_to_medals, secret_ids_to_secrets
+from worlds.jak3.locs.mission_locations import (main_tasks_to_missions, side_tasks_to_missions,
+                                                  get_location_id, get_dual_checks_for_mission,
+                                                  DUAL_CHECK_SLOT_OFFSET,
+                                                  medal_ids_to_medals, secret_ids_to_secrets)
 
 from ..game_id import jak3_gk
 
@@ -303,7 +306,8 @@ class Jak3MemoryReader:
                               else self.checks_per_mission)
 
                     for check in range(1, checks + 1):
-                        loc_id = main_mission_id * 100 + check
+                        loc_id = get_location_id(main_mission_id,
+                                                  DUAL_CHECK_SLOT_OFFSET + check - 1 if self.location_check_mode == 2 else check)
                         if loc_id not in self.location_outbox:
                             self.location_outbox.append(loc_id)
                             logger.debug(f"Mission completed! Raw game-task: {raw_main_task_id}"
@@ -325,7 +329,8 @@ class Jak3MemoryReader:
                     checks = 1 if self.location_check_mode == 2 else self.checks_per_mission
 
                     for check in range(1, checks + 1):
-                        loc_id = side_mission_id * 100 + check
+                        loc_id = get_location_id(side_mission_id,
+                                                  DUAL_CHECK_SLOT_OFFSET + check - 1 if self.location_check_mode == 2 else check)
                         if loc_id not in self.location_outbox:
                             self.location_outbox.append(loc_id)
                             logger.debug(f"Side mission completed! Raw game-task: {raw_side_task_id}"

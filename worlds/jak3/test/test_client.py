@@ -16,8 +16,8 @@ class TestJak3Client(unittest.TestCase):
     def test_agents_import(self):
         """Test that agent modules can be imported successfully."""
         try:
-            from worlds.jakii.agents.memory_reader import Jak3MemoryReader
-            from worlds.jakii.agents.repl_client import Jak3ReplClient
+            from worlds.jak3.agents.memory_reader import Jak3MemoryReader
+            from worlds.jak3.agents.repl_client import Jak3ReplClient
             self.assertTrue(Jak3MemoryReader)
             self.assertTrue(Jak3ReplClient)
         except ImportError as e:
@@ -27,44 +27,50 @@ class TestJak3Client(unittest.TestCase):
     def test_memory_reader_creation(self, mock_pymem):
         """Test that the memory reader can be created."""
         from worlds.jak3.agents.memory_reader import Jak3MemoryReader
-        
+
         # Mock callbacks
         location_callback = MagicMock()
         finish_callback = MagicMock()
+        deathlink_callback = MagicMock()
+        deathlink_toggle_callback = MagicMock()
         error_callback = MagicMock()
         warn_callback = MagicMock()
         success_callback = MagicMock()
         info_callback = MagicMock()
-        
+
         reader = Jak3MemoryReader(
             location_callback,
             finish_callback,
+            deathlink_callback,
+            deathlink_toggle_callback,
             error_callback,
             warn_callback,
             success_callback,
             info_callback
         )
-        
+
         self.assertFalse(reader.connected)
         self.assertFalse(reader.initiated_connect)
-        
+
     def test_repl_client_creation(self):
         """Test that the REPL client can be created."""
         from worlds.jak3.agents.repl_client import Jak3ReplClient
-        
+
         # Mock callbacks
         error_callback = MagicMock()
         warn_callback = MagicMock()
         success_callback = MagicMock()
         info_callback = MagicMock()
-        
+        memr_mock = MagicMock()
+
         repl = Jak3ReplClient(
             error_callback,
             warn_callback,
             success_callback,
-            info_callback
+            info_callback,
+            memr_mock
         )
-        
+
         self.assertFalse(repl.connected)
         self.assertFalse(repl.initiated_connect)
         self.assertEqual(repl.ip, "127.0.0.1")

@@ -13,6 +13,7 @@ from .items import (item_table, ITEM_ID_KEY_START, ITEM_ID_KEY_END, ITEM_ID_FILL
 from .locs import (mission_locations)
 from .locs.mission_locations import (get_all_mission_locations, get_location_id, get_max_mission_locations,
                                       get_dual_check_mission_locations, main_mission_table, side_mission_table,
+                                      main_tasks_to_missions, DUAL_CHECK_SLOT_OFFSET,
                                       MAX_CHECKS_PER_MISSION, get_minigame_medal_locations, get_secret_locations)
 from .locations import (Jak3Location, all_locations_table)
 from .regs.region_base import Jak3Region
@@ -109,8 +110,11 @@ It adds new weapons, devices and playable areas.
 
         # Determine item classification based on ID ranges
         if ITEM_ID_KEY_START <= item <= ITEM_ID_KEY_END:
-            # Key/progression items
-            data.append((1, ItemClass.progression | ItemClass.useful, 0))
+            if item in (52, 53):
+                data.append((4, ItemClass.progression | ItemClass.useful, 0))
+            else:
+                # Key/progression items
+                data.append((1, ItemClass.progression | ItemClass.useful, 0))
         elif ITEM_ID_FILLER_START <= item <= ITEM_ID_FILLER_END:
             # Filler items (will be made manually)
             data.append((0, ItemClass.filler, 0))
@@ -188,11 +192,13 @@ It adds new weapons, devices and playable areas.
 
         if self.options.location_check_mode == options.LocationCheckMode.option_dual_checks:
             for mission_id, mission in main_mission_table.items():
-                mission_tree_region.add_jak_mission(get_location_id(mission_id, 1), mission.name, mission.rule)
-                for i, item_name in enumerate(mission.items_granted, start=2):
+                mission_tree_region.add_jak_mission(get_location_id(mission_id, DUAL_CHECK_SLOT_OFFSET), mission.name,
+                                                    mission.rule)
+                for i, item_name in enumerate(mission.items_granted, start=DUAL_CHECK_SLOT_OFFSET + 1):
                     mission_tree_region.add_jak_mission(get_location_id(mission_id, i), item_name, mission.rule)
             for mission_id, mission in side_mission_table.items():
-                mission_tree_region.add_jak_mission(get_location_id(mission_id, 1), mission.name, mission.rule)
+                mission_tree_region.add_jak_mission(get_location_id(mission_id, DUAL_CHECK_SLOT_OFFSET), mission.name,
+                                                    mission.rule)
         else:
             checks = self.options.checks_per_mission.value
             for mission_id, mission in main_mission_table.items():
@@ -205,6 +211,10 @@ It adds new weapons, devices and playable areas.
                     name = f"{mission.name} - Check {check}"
                     loc_id = get_location_id(mission_id, check)
                     mission_tree_region.add_jak_mission(loc_id, name, mission.rule)
+
+        # Secrets menu purchases — always active, no toggle, no access rule
+        for name, loc_id in get_secret_locations().items():
+            mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
 
         if self.options.minigame_medal_checks:
             power_game_mission = main_mission_table[41]
@@ -267,10 +277,6 @@ It adds new weapons, devices and playable areas.
                 "Desert Rally Side Mission - Gold Medal": rally_mission.rule,
             }
 
-            # Secrets menu purchases — always active, no toggle, no access rule
-            for name, loc_id in get_secret_locations().items():
-                mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
-
             for name, loc_id in get_minigame_medal_locations(True).items():
                 rule = medal_rules.get(name, lambda state, player: True)
                 mission_tree_region.add_jak_mission(loc_id, name, rule)
@@ -279,7 +285,7 @@ It adds new weapons, devices and playable areas.
 
         if self.completion_type == options.CompletionCondition.option_complete_specific_mission:
             mission_id = self.completion_value
-            mission = main_mission_table.get(mission_id)
+            mission = main_tasks_to_missions.get(mission_id)
             if mission:
                 target_name = (
                     mission.name if self.options.location_check_mode == options.LocationCheckMode.option_dual_checks
@@ -291,10 +297,10 @@ It adds new weapons, devices and playable areas.
             def _completion_rule(state, player) -> bool:
                 completed_count = 0
                 for mid, miss in main_mission_table.items():
-                    if miss.rule(state, player):
+                    if miss.has_rule and miss.rule(state, player):
                         completed_count += 1
                 for sid, side_miss in side_mission_table.items():
-                    if side_miss.rule(state, player):
+                    if side_miss.has_rule and side_miss.rule(state, player):
                         completed_count += 1
                 return completed_count >= self.completion_value
 
