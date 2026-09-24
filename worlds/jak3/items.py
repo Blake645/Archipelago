@@ -26,6 +26,7 @@ TRAP_ID_START = 64  # Trap items start at 64
 TRAP_ID_END = 80  # Trap items end at 80
 SECRET_ID_START = 81  # Archipelago secret unlocks start at 81
 SECRET_ID_END = 113  # Archipelago secret unlocks end at 113
+ORBSANITY_ID = 114
 
 item_table = {
     # ========== KEY/PROGRESSION ITEMS (IDs 1-55) ==========
@@ -168,4 +169,6 @@ item_table = {
     111: Jak3ItemData(item_id=111, name="Secret - Invulnerability", symbol="secret-invulnerable"),
     112: Jak3ItemData(item_id=112, name="Secret - Unlimited Dark Jak", symbol="secret-endless-dark"),
     113: Jak3ItemData(item_id=113, name="Secret - Unlimited Light Jak", symbol="secret-endless-light"),
+    # ========== ORBSANITY (ID 114) ==========
+    114: Jak3ItemData(item_id=114, name="Orb Bundle", symbol="orb-bundle"),
 }

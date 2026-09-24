@@ -663,6 +663,12 @@ def get_secret_locations() -> dict[str, int]:
     return {secret.name: secret.location_id for secret in secrets_table.values()}
 medal_ids_to_medals = {medal_id: medal for medal_id, medal in minigame_medal_table.items()}
 
+def get_orb_bundle_location_id(bundle_id: int) -> int:
+    return 50200 + bundle_id
+
+def get_orb_bundle_locations(max_bundles: int) -> dict[str, int]:
+    return {f"Orb Bundle {i}": get_orb_bundle_location_id(i) for i in range(1, max_bundles + 1)}
+
 def get_minigame_medal_locations(medal_checks_enabled: bool) -> dict[str, int]:
     if not medal_checks_enabled:
         return {}

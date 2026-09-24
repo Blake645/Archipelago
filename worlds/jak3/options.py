@@ -3,6 +3,11 @@ from functools import cached_property
 from Options import PerGameCommonOptions, StartInventoryPool, Choice, Range, Toggle, OptionCounter
 from .items import item_table, TRAP_ID_START, TRAP_ID_END
 
+
+# ============================================================
+# Completion Goal
+# ============================================================
+
 class CompletionCondition(Choice):
     """Set your goal for completion!"""
     display_name = "Completion Condition"
@@ -24,7 +29,12 @@ class NumberOfMissionsForCompletion(Range):
     range_start = 5
     range_end = 107
     default = 60
-    
+
+
+# ============================================================
+# Location Checks
+# ============================================================
+
 class LocationCheckMode(Choice):
     """Choose how location checks are distributed across missions.
     - Single Check Per Mission: uses the "Checks Per Mission" option to determine a uniform number of checks per mission.
@@ -43,11 +53,42 @@ class ChecksPerMission(Range):
     range_end = 10
     default = 3
 
-
 class MinigameMedalChecks(Toggle):
     """If enabled, earning bronze, silver, and gold medals in minigames becomes
     a location check for each medal tier. This adds 3 new locations per eligible minigame."""
     display_name = "Minigame Medal Checks"
+
+
+# ============================================================
+# Orbsanity
+# ============================================================
+
+class Orbsanity(Toggle):
+    """If enabled, Precursor Orbs are randomized. Orbs are collected in bundles, and picking up all orbs
+    in a bundle sends an Archipelago check instead of granting Orbs directly. Orb Bundle items received
+    from Archipelago grant a full bundle's worth of Orbs at once."""
+    display_name = "Orbsanity"
+
+class OrbsPerBundle(Choice):
+    """Set how many Precursor Orbs make up one Orbsanity bundle/check. Only used if Orbsanity is enabled."""
+    display_name = "Orbs Per Bundle"
+    option_1_orb = 1
+    option_10_orbs = 10
+    option_12_orbs = 12
+    option_20_orbs = 20
+    option_25_orbs = 25
+    option_40_orbs = 40
+    option_50_orbs = 50
+    option_75_orbs = 75
+    option_100_orbs = 100
+    option_120_orbs = 120
+    option_200_orbs = 200
+    default = 20
+
+
+# ============================================================
+# Burning Bush Costs
+# ============================================================
 
 class RandomizeBurningBushCost(Toggle):
     """If enabled, the Skull Gem cost to start Burning Bush side missions will be randomized per mission type."""
@@ -74,9 +115,19 @@ class BurningBushCostOther(Range):
     range_end = 100
     default = 12
 
+
+# ============================================================
+# Cosmetic / Misc
+# ============================================================
+
 class JakIsJak2(Toggle):
     """Changes Jak's model to his Jak II appearance. WARNING: Shadows are a bit broken, and you won't see things like armor on Jak."""
     display_name = "Jak is Jak 2"
+
+
+# ============================================================
+# Traps
+# ============================================================
 
 class PercentOfFillerItemsReplacedWithTraps(Range):
     """
@@ -114,6 +165,11 @@ class TrapWeights(OptionCounter):
     def weighted_pair(self) -> tuple[list[str], list[int]]:
         return list(self.value.keys()), list(self.value.values())
 
+
+# ============================================================
+# Option Set
+# ============================================================
+
 @dataclass
 class Jak3Options(PerGameCommonOptions):
     jak_3_completion_condition: CompletionCondition
@@ -122,6 +178,8 @@ class Jak3Options(PerGameCommonOptions):
     checks_per_mission: ChecksPerMission
     location_check_mode: LocationCheckMode
     minigame_medal_checks: MinigameMedalChecks
+    orbsanity: Orbsanity
+    orbs_per_bundle: OrbsPerBundle
     randomize_burning_bush_cost: RandomizeBurningBushCost
     burning_bush_cost_get_to: BurningBushCostGetTo
     burning_bush_cost_race: BurningBushCostRace

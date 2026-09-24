@@ -96,6 +96,8 @@ class Jak3Context(CommonContext):
                                      self.on_finish_check,
                                      self.on_deathlink_check,
                                      self.on_deathlink_toggle,
+                                     self.on_orb_spend,
+                                     self.on_gem_spend,
                                      self.on_log_error,
                                      self.on_log_warn,
                                      self.on_log_success,
@@ -155,7 +157,9 @@ class Jak3Context(CommonContext):
                     slot_data.get("burning_bush_cost_get_to", 4),
                     slot_data.get("burning_bush_cost_race", 8),
                     slot_data.get("burning_bush_cost_other", 12),
-                    slot_data.get("minigame_medal_checks", 0)))
+                    slot_data.get("minigame_medal_checks", 0),
+                    slot_data.get("orbsanity", 0),
+                    slot_data.get("orbs_per_bundle", 20)))
 
             # Tell the server if Deathlink is enabled or disabled in the in-game options.
             # This allows us to "remember" the user's choice.
@@ -241,6 +245,12 @@ class Jak3Context(CommonContext):
     # We don't need an ap_inform function because update_death_link solves that need.
     def on_deathlink_toggle(self):
         create_task_log_exception(self.update_death_link(self.memr.deathlink_enabled))
+
+    def on_orb_spend(self, amount: int):
+        create_task_log_exception(self.repl.acknowledge_orb_spend(amount))
+
+    def on_gem_spend(self, amount: int):
+        create_task_log_exception(self.repl.acknowledge_gem_spend(amount))
 
     def _markup_panels(self, msg: str, c: str = None):
         color = self.jsontotextparser.color_codes[c] if c else None

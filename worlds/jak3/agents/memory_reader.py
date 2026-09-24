@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from worlds.jak3.locs.mission_locations import (main_tasks_to_missions, side_tasks_to_missions,
                                                   get_location_id, get_dual_checks_for_mission,
                                                   DUAL_CHECK_SLOT_OFFSET,
-                                                  medal_ids_to_medals, secret_ids_to_secrets)
+                                                  medal_ids_to_medals, secret_ids_to_secrets,
+                                                  get_orb_bundle_location_id)
 
 from ..game_id import jak3_gk
 
@@ -25,7 +26,7 @@ sizeof_float = 4
 # *****************************************************************************
 # **** This number must match (-> *ap-info-jak3* version) in ap-struct.gc! ****
 # *****************************************************************************
-expected_memory_version = 8
+expected_memory_version = 9
 
 
 @dataclass
@@ -59,13 +60,15 @@ death_count_offset = offsets.define(sizeof_uint32)
 cause_of_death_offset = offsets.define(sizeof_uint8)
 deathlink_enabled_offset = offsets.define(sizeof_uint8)
 trap_duration_offset = offsets.define(sizeof_float)
-needs_item_replay_offset = offsets.define(sizeof_uint8)
-initial_replay_done_offset = offsets.define(sizeof_uint8)
 next_medal_index_offset = offsets.define(sizeof_uint64)
 medals_checked_offset = offsets.define(sizeof_uint32, 30)
-is_replaying_offset = offsets.define(sizeof_uint8)
 next_secret_index_offset = offsets.define(sizeof_uint64)
 secrets_checked_offset = offsets.define(sizeof_uint32, 40)
+orbs_found_offset = offsets.define(sizeof_uint32)
+next_orb_bundle_index_offset = offsets.define(sizeof_uint64)
+orb_bundles_checked_offset = offsets.define(sizeof_uint32, 600)
+orbs_spent_offset = offsets.define(sizeof_uint32)
+gems_spent_offset = offsets.define(sizeof_uint32)
 end_marker_offset = offsets.define(sizeof_uint8, 4)
 
 
@@ -131,7 +134,6 @@ class Jak3MemoryReader:
     finished_game: bool = False
     checks_per_mission: int = 1
     location_check_mode: int = 1  # 1 = single check per mission, 2 = dual checks
-    needs_item_replay: bool = False
 
     # Deathlink handling
     deathlink_enabled: bool = False
@@ -139,10 +141,18 @@ class Jak3MemoryReader:
     cause_of_death: int = 0
     death_count: int = 0
 
+    # Spend tracking (orbs/gems)
+    last_orbs_spent: int = 0
+    last_gems_spent: int = 0
+    orbs_paid: int = 0
+    gems_paid: int = 0
+
     inform_checked_location: Callable
     inform_finished_game: Callable
     inform_died: Callable
     inform_toggled_deathlink: Callable
+    inform_orb_spend: Callable
+    inform_gem_spend: Callable
 
     log_error: Callable
     log_warn: Callable
@@ -154,6 +164,8 @@ class Jak3MemoryReader:
                  finish_game_callback: Callable,
                  send_deathlink_callback: Callable,
                  toggle_deathlink_callback: Callable,
+                 orb_spend_callback: Callable,
+                 gem_spend_callback: Callable,
                  log_error_callback: Callable,
                  log_warn_callback: Callable,
                  log_success_callback: Callable,
@@ -165,6 +177,8 @@ class Jak3MemoryReader:
         self.inform_finished_game = finish_game_callback
         self.inform_died = send_deathlink_callback
         self.inform_toggled_deathlink = toggle_deathlink_callback
+        self.inform_orb_spend = orb_spend_callback
+        self.inform_gem_spend = gem_spend_callback
 
         self.log_error = log_error_callback
         self.log_warn = log_warn_callback
@@ -212,6 +226,14 @@ class Jak3MemoryReader:
 
             if self.send_deathlink:
                 self.inform_died()
+
+            if self.orbs_paid > 0:
+                self.inform_orb_spend(self.orbs_paid)
+                self.orbs_paid = 0
+
+            if self.gems_paid > 0:
+                self.inform_gem_spend(self.gems_paid)
+                self.gems_paid = 0
 
     async def connect(self):
         try:
@@ -372,10 +394,17 @@ class Jak3MemoryReader:
                 self.finished_game = True
                 self.log_success(logger, "Congratulations! You finished the game!")
 
-            # Check if game needs item replay
-            needs_replay = self.read_goal_address(needs_item_replay_offset, sizeof_uint8)
-            if needs_replay > 0:
-                self.needs_item_replay = True
+
+            next_orb_bundle_idx = self.read_goal_address(next_orb_bundle_index_offset, sizeof_uint64)
+            for i in range(int(next_orb_bundle_idx)):
+                raw_bundle_id = self.read_goal_address(orb_bundles_checked_offset + (i * sizeof_uint32),
+                                                       sizeof_uint32)
+
+                loc_id = get_orb_bundle_location_id(raw_bundle_id)
+                if loc_id not in self.location_outbox:
+                    self.location_outbox.append(loc_id)
+                    logger.debug(f"Orb bundle checked! Bundle ID: {raw_bundle_id}"
+                                 f" -> Location ID: {loc_id}")
 
             # Deathlink handling
             death_count = self.read_goal_address(death_count_offset, sizeof_uint32)
@@ -388,6 +417,17 @@ class Jak3MemoryReader:
             # Listen for any changes to this setting.
             deathlink_flag = self.read_goal_address(deathlink_enabled_offset, sizeof_uint8)
             self.deathlink_enabled = bool(deathlink_flag)
+
+            # Spend tracking: GOAL increments these monotonic counters the instant a spend happens.
+            orbs_spent = self.read_goal_address(orbs_spent_offset, sizeof_uint32)
+            if orbs_spent > self.last_orbs_spent:
+                self.orbs_paid += (orbs_spent - self.last_orbs_spent)
+                self.last_orbs_spent = orbs_spent
+
+            gems_spent = self.read_goal_address(gems_spent_offset, sizeof_uint32)
+            if gems_spent > self.last_gems_spent:
+                self.gems_paid += (gems_spent - self.last_gems_spent)
+                self.last_gems_spent = gems_spent
 
         except (ProcessError, MemoryReadError, WinAPIError):
             msg = (f"Error reading game memory! (Did the game crash?)\n"

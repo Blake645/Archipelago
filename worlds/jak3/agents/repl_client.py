@@ -63,7 +63,6 @@ class Jak3ReplClient:
     item_inbox: dict[int, NetworkItem] = {}
     inbox_index = 0
     json_message_queue: Queue[JsonMessageData] = queue.Queue()
-    is_replaying: bool = False
 
     log_error: Callable
     log_warn: Callable
@@ -139,25 +138,15 @@ class Jak3ReplClient:
         if not self.processed_initial_items:
             if self.inbox_index >= self.initial_item_count >= 0:
                 self.processed_initial_items = True
+                await self.send_form_no_response("(set! *ap-suppress-initial-talkers?* #f)")
                 await self.send_connection_status("ready")
 
-        # Check if game needs item replay after save load
-        if self.memr.needs_item_replay:
-            self.inbox_index = 0
-            self.is_replaying = True
-            self.memr.needs_item_replay = False
-            await self.send_form_no_response("(set! (-> *ap-info-jak3* needs-item-replay) (the-as uint8 0))")
-            await self.send_form_no_response("(set! (-> *ap-info-jak3* is-replaying) (the-as uint8 1))")
 
         if len(self.item_inbox) > self.inbox_index:
             await self.receive_item()
             await self.save_data()
             self.inbox_index += 1
 
-        # Clear replay flag when done
-        if self.is_replaying and self.inbox_index >= len(self.item_inbox):
-            self.is_replaying = False
-            await self.send_form_no_response("(set! (-> *ap-info-jak3* is-replaying) (the-as uint8 0))")
 
         if self.received_deathlink:
             await self.receive_deathlink()
@@ -317,10 +306,6 @@ class Jak3ReplClient:
         item_name: str = item_data.name
         item_symbol: str = item_data.symbol
 
-        # During replay, skip filler and traps
-        if self.is_replaying and (TRAP_ID_START <= item <= TRAP_ID_END or
-                                  ITEM_ID_FILLER_START <= item <= ITEM_ID_FILLER_END):
-            return True
 
         if TRAP_ID_START <= item <= TRAP_ID_END:
             ok = await self.send_form_no_response(f"(ap-trap-received! '{item_symbol})")
@@ -355,6 +340,14 @@ class Jak3ReplClient:
             self.log_error(logger, f"Unable to receive deathlink signal!")
         return ok
 
+    async def acknowledge_orb_spend(self, amount: int) -> bool:
+        logger.debug(f"Player spent {amount} orbs.")
+        return True
+
+    async def acknowledge_gem_spend(self, amount: int) -> bool:
+        logger.debug(f"Player spent {amount} gems.")
+        return True
+
     async def setup_options(self,
                             slot_name: str,
                             slot_seed: str,
@@ -367,7 +360,9 @@ class Jak3ReplClient:
                             bbush_cost_get_to: int = 4,
                             bbush_cost_race: int = 8,
                             bbush_cost_other: int = 12,
-                            minigame_medal_checks: int = 0) -> bool:
+                            minigame_medal_checks: int = 0,
+                            orbsanity: int = 0,
+                            orbs_per_bundle: int = 20) -> bool:
         sanitized_name = self.sanitize_file_text(slot_name)
         sanitized_seed = self.sanitize_file_text(slot_seed)
 
@@ -383,7 +378,9 @@ class Jak3ReplClient:
                                               f":bbush-cost-get-to {bbush_cost_get_to}.0 "
                                               f":bbush-cost-race {bbush_cost_race}.0 "
                                               f":bbush-cost-other {bbush_cost_other}.0 "
-                                              f":minigame-medal-checks {minigame_medal_checks} ))")
+                                              f":minigame-medal-checks {minigame_medal_checks} "
+                                              f":orbsanity {orbsanity} "
+                                              f":orbs-per-bundle {orbs_per_bundle} ))")
         message = (f"Setting options: \n"
                    f"   Slot Name {sanitized_name}, \n"
                    f"   Slot Seed {sanitized_seed}, \n"
@@ -396,7 +393,9 @@ class Jak3ReplClient:
                    f"   BBush Cost Get-To: {bbush_cost_get_to}, \n"
                    f"   BBush Cost Race: {bbush_cost_race}, \n"
                    f"   BBush Cost Other: {bbush_cost_other}, \n"
-                   f"   Minigame Medal Checks: {minigame_medal_checks}... ")
+                   f"   Minigame Medal Checks: {minigame_medal_checks}, \n"
+                   f"   Orbsanity: {orbsanity}, \n"
+                   f"   Orbs Per Bundle: {orbs_per_bundle}... ")
         if ok:
             logger.debug(message + "Sent!")
         else:

@@ -9,14 +9,18 @@ from typing import cast, ClassVar, Any
 from . import options
 from .game_id import jak3_name, jak3_max
 from .items import (item_table, ITEM_ID_KEY_START, ITEM_ID_KEY_END, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END,
-                    TRAP_ID_START, TRAP_ID_END, SECRET_ID_START, SECRET_ID_END, Jak3ItemData, Jak3Item)
+                    TRAP_ID_START, TRAP_ID_END, SECRET_ID_START, SECRET_ID_END, ORBSANITY_ID, Jak3ItemData, Jak3Item)
 from .locs import (mission_locations)
 from .locs.mission_locations import (get_all_mission_locations, get_location_id, get_max_mission_locations,
                                       get_dual_check_mission_locations, main_mission_table, side_mission_table,
                                       main_tasks_to_missions, DUAL_CHECK_SLOT_OFFSET,
-                                      MAX_CHECKS_PER_MISSION, get_minigame_medal_locations, get_secret_locations)
+                                      MAX_CHECKS_PER_MISSION, get_minigame_medal_locations, get_secret_locations,
+                                      get_orb_bundle_locations)
 from .locations import (Jak3Location, all_locations_table)
 from .regs.region_base import Jak3Region
+
+
+TOTAL_ORBS = 600
 
 
 class Jak3Settings(settings.Group):
@@ -79,7 +83,8 @@ It adds new weapons, devices and playable areas.
     settings: ClassVar[Jak3Settings]
 
     location_name_to_id = {**get_max_mission_locations(), **get_dual_check_mission_locations(),
-                           **get_minigame_medal_locations(True), **get_secret_locations(), }
+                           **get_minigame_medal_locations(True), **get_secret_locations(),
+                           **get_orb_bundle_locations(TOTAL_ORBS)}
     item_name_to_id = {item_data.name: k for k, item_data in item_table.items()}
     item_name_groups = {
         "Items": {item.name for item in item_table.values()}
@@ -103,6 +108,11 @@ It adds new weapons, devices and playable areas.
         else:
             raise OptionError(f"Unknown completion condition selected for Jak 3: {self.completion_type}")
 
+        if self.options.orbsanity:
+            bundle_size = self.options.orbs_per_bundle.value
+            self.orb_bundle_item_name = f"{bundle_size} Precursor Orbs"
+            self.item_name_to_id = {**self.item_name_to_id, self.orb_bundle_item_name: ORBSANITY_ID}
+
     @staticmethod
     def item_data_helper(item: int) -> list[tuple[int, ItemClass, int]]:
         # count,num,classification
@@ -124,6 +134,9 @@ It adds new weapons, devices and playable areas.
         elif SECRET_ID_START <= item <= SECRET_ID_END:
             # Archipelago secret unlocks — optional QoL/cosmetic, not required for reachability
             data.append((1, ItemClass.useful, 0))
+        elif item == ORBSANITY_ID:
+            # Orb Bundle — count is determined dynamically in create_items(), not here
+            data.append((1, ItemClass.progression | ItemClass.useful, 0))
         else:
             # If we try to make items with ID's outside defined ranges, something has gone wrong
             raise KeyError(f"Tried to fill item pool with unknown ID {item}. Valid ranges: "
@@ -142,6 +155,8 @@ It adds new weapons, devices and playable areas.
                 continue
             if TRAP_ID_START <= item_id <= TRAP_ID_END:
                 continue
+            if item_id == ORBSANITY_ID:
+                continue
 
             data = self.item_data_helper(item_id)
             for (count, classification, num) in data:
@@ -149,6 +164,14 @@ It adds new weapons, devices and playable areas.
                     Jak3Item(item_name, classification, item_id, self.player)
                     for _ in range(count)]
                 items_made += count
+
+        if self.options.orbsanity:
+            bundle_size = self.options.orbs_per_bundle.value
+            num_bundles = TOTAL_ORBS // bundle_size
+            self.multiworld.itempool += [
+                Jak3Item(self.orb_bundle_item_name, ItemClass.progression | ItemClass.useful, ORBSANITY_ID, self.player)
+                for _ in range(num_bundles)]
+            items_made += num_bundles
 
         all_regions = self.multiworld.get_regions(self.player)
         total_locations = sum(reg.location_count for reg in cast(list[Jak3Region], all_regions))
@@ -215,6 +238,13 @@ It adds new weapons, devices and playable areas.
         # Secrets menu purchases — always active, no toggle, no access rule
         for name, loc_id in get_secret_locations().items():
             mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
+
+        # Orbsanity bundles — only active when the Orbsanity option is enabled
+        if self.options.orbsanity:
+            bundle_size = self.options.orbs_per_bundle.value
+            num_bundles = TOTAL_ORBS // bundle_size
+            for name, loc_id in get_orb_bundle_locations(num_bundles).items():
+                mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
 
         if self.options.minigame_medal_checks:
             power_game_mission = main_mission_table[41]
@@ -321,5 +351,7 @@ It adds new weapons, devices and playable areas.
             "burning_bush_cost_race",
             "burning_bush_cost_other",
             "minigame_medal_checks",
+            "orbsanity",
+            "orbs_per_bundle",
         )
         return options_dict
