@@ -28,6 +28,28 @@ SECRET_ID_START = 81  # Archipelago secret unlocks start at 81
 SECRET_ID_END = 113  # Archipelago secret unlocks end at 113
 ORBSANITY_ID = 114
 
+# Orbs are generic and interchangeable.
+# Only one of these variants is ever actually placed in the pool,
+# corresponding to the chosen orbs_per_bundle option.
+orb_item_table = {
+    1: "1 Precursor Orb",
+    10: "10 Precursor Orbs",
+    12: "12 Precursor Orbs",
+    20: "20 Precursor Orbs",
+    25: "25 Precursor Orbs",
+    40: "40 Precursor Orbs",
+    50: "50 Precursor Orbs",
+    75: "75 Precursor Orbs",
+    100: "100 Precursor Orbs",
+    120: "120 Precursor Orbs",
+    200: "200 Precursor Orbs",
+}
+
+# Reserves IDs ORBSANITY_ID through ORBSANITY_ID+10 (one per orbs_per_bundle option value).
+orb_bundle_size_to_id = {
+    size: ORBSANITY_ID + i for i, size in enumerate(orb_item_table.keys())
+}
+
 item_table = {
     # ========== KEY/PROGRESSION ITEMS (IDs 1-55) ==========
 
@@ -169,6 +191,9 @@ item_table = {
     111: Jak3ItemData(item_id=111, name="Secret - Invulnerability", symbol="secret-invulnerable"),
     112: Jak3ItemData(item_id=112, name="Secret - Unlimited Dark Jak", symbol="secret-endless-dark"),
     113: Jak3ItemData(item_id=113, name="Secret - Unlimited Light Jak", symbol="secret-endless-light"),
-    # ========== ORBSANITY (ID 114) ==========
-    114: Jak3ItemData(item_id=114, name="Orb Bundle", symbol="orb-bundle"),
+    # ========== ORBSANITY (IDs ORBSANITY_ID..ORBSANITY_ID+10) ==========
+    **{
+        orb_bundle_size_to_id[size]: Jak3ItemData(item_id=orb_bundle_size_to_id[size], name=name, symbol="orb-bundle")
+        for size, name in orb_item_table.items()
+    },
 }

@@ -9,7 +9,8 @@ from typing import cast, ClassVar, Any
 from . import options
 from .game_id import jak3_name, jak3_max
 from .items import (item_table, ITEM_ID_KEY_START, ITEM_ID_KEY_END, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END,
-                    TRAP_ID_START, TRAP_ID_END, SECRET_ID_START, SECRET_ID_END, ORBSANITY_ID, Jak3ItemData, Jak3Item)
+                    TRAP_ID_START, TRAP_ID_END, SECRET_ID_START, SECRET_ID_END, ORBSANITY_ID, Jak3ItemData, Jak3Item,
+                    orb_item_table, orb_bundle_size_to_id)
 from .locs import (mission_locations)
 from .locs.mission_locations import (get_all_mission_locations, get_location_id, get_max_mission_locations,
                                       get_dual_check_mission_locations, main_mission_table, side_mission_table,
@@ -98,6 +99,8 @@ It adds new weapons, devices and playable areas.
     total_prog_items: int = 55
     total_filler_items: int = 0
     total_trap_items: int = 0
+    orb_bundle_item_name: str = ""
+    orb_bundle_item_id: int = 0
 
     def generate_early(self) -> None:
         self.completion_type = self.options.jak_3_completion_condition.value
@@ -110,8 +113,8 @@ It adds new weapons, devices and playable areas.
 
         if self.options.orbsanity:
             bundle_size = self.options.orbs_per_bundle.value
-            self.orb_bundle_item_name = f"{bundle_size} Precursor Orbs"
-            self.item_name_to_id = {**self.item_name_to_id, self.orb_bundle_item_name: ORBSANITY_ID}
+            self.orb_bundle_item_name = orb_item_table[bundle_size]
+            self.orb_bundle_item_id = orb_bundle_size_to_id[bundle_size]
 
     @staticmethod
     def item_data_helper(item: int) -> list[tuple[int, ItemClass, int]]:
@@ -134,7 +137,7 @@ It adds new weapons, devices and playable areas.
         elif SECRET_ID_START <= item <= SECRET_ID_END:
             # Archipelago secret unlocks — optional QoL/cosmetic, not required for reachability
             data.append((1, ItemClass.useful, 0))
-        elif item == ORBSANITY_ID:
+        elif item in orb_bundle_size_to_id.values():
             # Orb Bundle — count is determined dynamically in create_items(), not here
             data.append((1, ItemClass.progression | ItemClass.useful, 0))
         else:
@@ -155,7 +158,7 @@ It adds new weapons, devices and playable areas.
                 continue
             if TRAP_ID_START <= item_id <= TRAP_ID_END:
                 continue
-            if item_id == ORBSANITY_ID:
+            if item_id in orb_bundle_size_to_id.values():
                 continue
 
             data = self.item_data_helper(item_id)
@@ -169,7 +172,8 @@ It adds new weapons, devices and playable areas.
             bundle_size = self.options.orbs_per_bundle.value
             num_bundles = TOTAL_ORBS // bundle_size
             self.multiworld.itempool += [
-                Jak3Item(self.orb_bundle_item_name, ItemClass.progression | ItemClass.useful, ORBSANITY_ID, self.player)
+                Jak3Item(self.orb_bundle_item_name, ItemClass.progression | ItemClass.useful,
+                         self.orb_bundle_item_id, self.player)
                 for _ in range(num_bundles)]
             items_made += num_bundles
 

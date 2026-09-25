@@ -192,13 +192,10 @@ class Jak3Context(CommonContext):
 
             if self.slot_concerns_self(recipient):
                 my_item_name = self.item_names.lookup_in_game(item.item)
-                if is_filler_or_trap(item.item):
-                    if self.slot_concerns_self(item.player):
-                        my_item_finder = "MYSELF"
-                    else:
-                        my_item_finder = self.player_names[item.player]
+                if self.slot_concerns_self(item.player):
+                    my_item_finder = "MYSELF"
                 else:
-                    my_item_name = None
+                    my_item_finder = self.player_names[item.player]
 
             if self.slot_concerns_self(item.player) and not self.slot_concerns_self(recipient):
                 their_item_name = self.item_names.lookup_in_slot(item.item, recipient)
