@@ -137,12 +137,13 @@ main_mission_table = {
     21: Jak3MissionData(mission_id=21, task_id=30, name="Complete Monk Temple tests",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze", "Dark Invisibility"), player),
+                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze", "Dark Invisibility"), player)
+                        and main_mission_table[19].rule(state, player),
                         items_granted=["Light Freeze"]),
     22: Jak3MissionData(mission_id=22, task_id=31, name="Travel through catacomb subrails",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
-                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze"), player),
+                        and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze", "Dark Invisibility"), player),
                         items_granted=["Light Shield"]),
     23: Jak3MissionData(mission_id=23, task_id=32, name="Explore eco mine",
                         rule=lambda state, player:

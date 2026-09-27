@@ -107,7 +107,7 @@ class Jak3ReplClient:
 
         if self.connected:
             try:
-                OpenProcess(process_name=jak3_gk)
+                OpenProcess(name=jak3_gk)
             except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
@@ -120,7 +120,7 @@ class Jak3ReplClient:
                 self.log_error(logger, msg)
                 self.connected = False
             try:
-                OpenProcess(process_name=jak3_goalc)
+                OpenProcess(name=jak3_goalc)
             except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error sending data to compiler! (Did the compiler crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
@@ -187,14 +187,14 @@ class Jak3ReplClient:
 
     async def connect(self):
         try:
-            self.gk_process = OpenProcess(process_name=jak3_gk)
+            self.gk_process = OpenProcess(name=jak3_gk)
             logger.debug("Found the gk process: " + str(self.gk_process.pid))
         except ProcessNotFoundError:
             self.log_error(logger, "Could not find the game process.")
             return
 
         try:
-            self.goalc_process = OpenProcess(process_name=jak3_goalc)
+            self.goalc_process = OpenProcess(name=jak3_goalc)
             logger.debug("Found the goalc process: " + str(self.goalc_process.pid))
         except ProcessNotFoundError:
             self.log_error(logger, "Could not find the compiler process.")

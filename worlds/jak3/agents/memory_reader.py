@@ -192,7 +192,7 @@ class Jak3MemoryReader:
 
         if self.connected:
             try:
-                OpenProcess(process_name=jak3_gk)
+                OpenProcess(name=jak3_gk)
             except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
@@ -237,7 +237,7 @@ class Jak3MemoryReader:
 
     async def connect(self):
         try:
-            self.gk_process = OpenProcess(process_name=jak3_gk)
+            self.gk_process = OpenProcess(name=jak3_gk)
             if self.gk_process:
                 logger.debug("Found the gk process: " + str(self.gk_process.pid))
             else:

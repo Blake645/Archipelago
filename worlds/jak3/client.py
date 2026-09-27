@@ -18,7 +18,7 @@ import colorama
 from psutil import NoSuchProcess
 
 import PyMemoryEditor
-from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
+from PyMemoryEditor import OpenProcess, ProcessNotFoundError, AmbiguousProcessNameError
 
 # Archipelago imports
 import ModuleUpdate
@@ -394,14 +394,14 @@ async def run_game(ctx: Jak3Context):
 
     gk_running = False
     try:
-        OpenProcess(process_name=jak3_gk)
+        OpenProcess(name=jak3_gk)
         gk_running = True
     except ProcessNotFoundError:
         ctx.on_log_warn(logger, "Game not running, attempting to start.")
 
     goalc_running = False
     try:
-        OpenProcess(process_name=jak3_goalc)
+        OpenProcess(name=jak3_goalc)
         goalc_running = True
     except ProcessNotFoundError:
         ctx.on_log_warn(logger, "Compiler not running, attempting to start.")
