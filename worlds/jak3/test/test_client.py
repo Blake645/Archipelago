@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 class TestJak3Client(unittest.TestCase):
-    """Test basic functionality of the Jak 2 client."""
+    """Test basic functionality of the Jak 3 client."""
     
     def test_client_import(self):
         """Test that the client module can be imported successfully."""
@@ -33,6 +33,8 @@ class TestJak3Client(unittest.TestCase):
         finish_callback = MagicMock()
         deathlink_callback = MagicMock()
         deathlink_toggle_callback = MagicMock()
+        orb_spend_callback = MagicMock()
+        gem_spend_callback = MagicMock()
         error_callback = MagicMock()
         warn_callback = MagicMock()
         success_callback = MagicMock()
@@ -43,6 +45,8 @@ class TestJak3Client(unittest.TestCase):
             finish_callback,
             deathlink_callback,
             deathlink_toggle_callback,
+            orb_spend_callback,
+            gem_spend_callback,
             error_callback,
             warn_callback,
             success_callback,

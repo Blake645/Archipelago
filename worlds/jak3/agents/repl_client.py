@@ -261,6 +261,12 @@ class Jak3ReplClient:
         result = "".join([c if c in allowed_chars_no_extras else "" for c in text[:16]]).upper()
         return f"\"{result}\""
 
+    @staticmethod
+    def sanitize_seed_text(text: str) -> str:
+        allowed_chars_no_extras = ALLOWED_CHARACTERS - {" ", "'", "(", ")", "\""}
+        result = "".join([c if c in allowed_chars_no_extras else "" for c in text[:7]]).upper()
+        return f"\"{result}\""
+
     def queue_game_text(self, my_item_name, my_item_finder, their_item_name, their_item_owner):
         self.json_message_queue.put(JsonMessageData(my_item_name, my_item_finder, their_item_name, their_item_owner))
 
@@ -364,7 +370,7 @@ class Jak3ReplClient:
                             orbsanity: int = 0,
                             orbs_per_bundle: int = 20) -> bool:
         sanitized_name = self.sanitize_file_text(slot_name)
-        sanitized_seed = self.sanitize_file_text(slot_seed)
+        sanitized_seed = self.sanitize_seed_text(slot_seed)
 
         ok = await self.send_form_no_response(f"(ap-setup-options! (new 'static 'ap-seed-options "
                                               f":slot-name {sanitized_name} "
