@@ -16,6 +16,15 @@ from ..game_id import jak3_gk
 logger = logging.getLogger("Jak3MemoryReader")
 
 
+def open_process(process_name: str):
+    """PyMemoryEditor's OpenProcess() has used different keyword argument names
+       across versions ('process_name' vs 'name'). Try both for compatibility."""
+    try:
+        return OpenProcess(process_name=process_name)
+    except TypeError:
+        return OpenProcess(name=process_name)
+
+
 # Some helpful constants.
 sizeof_uint64 = 8
 sizeof_uint32 = 4
@@ -192,7 +201,7 @@ class Jak3MemoryReader:
 
         if self.connected:
             try:
-                OpenProcess(name=jak3_gk)
+                open_process(jak3_gk)
             except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak 3 Client "
@@ -237,7 +246,7 @@ class Jak3MemoryReader:
 
     async def connect(self):
         try:
-            self.gk_process = OpenProcess(name=jak3_gk)
+            self.gk_process = open_process(jak3_gk)
             if self.gk_process:
                 logger.debug("Found the gk process: " + str(self.gk_process.pid))
             else:
@@ -429,7 +438,7 @@ class Jak3MemoryReader:
                 self.gems_paid += (gems_spent - self.last_gems_spent)
                 self.last_gems_spent = gems_spent
 
-        except (ProcessError, MemoryReadError, WinAPIError):
+        except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
             msg = (f"Error reading game memory! (Did the game crash?)\n"
                    f"Please close all open windows and reopen the Jak 3 Client "
                    f"from the Archipelago Launcher.\n"
