@@ -132,6 +132,10 @@ class Jak3Context(CommonContext):
 
         if cmd == "RoomInfo":
             self.slot_seed = args["seed_name"]
+            self.memr.slot_seed = self.slot_seed[:8]
+            self.repl.slot_seed = self.slot_seed[:8]
+            self.memr.load_data()
+            self.repl.load_data()
 
         if cmd == "Connected":
             slot_data = args["slot_data"]

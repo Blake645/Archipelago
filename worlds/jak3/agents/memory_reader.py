@@ -143,6 +143,7 @@ class Jak3MemoryReader:
     finished_game: bool = False
     checks_per_mission: int = 1
     location_check_mode: int = 1  # 1 = single check per mission, 2 = dual checks
+    slot_seed: str = ""
 
     # Deathlink handling
     deathlink_enabled: bool = False
@@ -462,7 +463,8 @@ class Jak3MemoryReader:
             signed=False)
 
     def save_data(self):
-        with open("jak3_location_outbox.json", "w+") as f:
+        filename = f"jak3_location_outbox_{self.slot_seed}.json" if self.slot_seed else "jak3_location_outbox.json"
+        with open(filename, "w+") as f:
             dump = {
                 "outbox_index": self.outbox_index,
                 "location_outbox": self.location_outbox
@@ -470,8 +472,11 @@ class Jak3MemoryReader:
             json.dump(dump, f, indent=4)
 
     def load_data(self):
+        self.outbox_index = 0
+        self.location_outbox = []
+        filename = f"jak3_location_outbox_{self.slot_seed}.json" if self.slot_seed else "jak3_location_outbox.json"
         try:
-            with open("jak3_location_outbox.json", "r") as f:
+            with open(filename, "r") as f:
                 load = json.load(f)
                 self.outbox_index = load["outbox_index"]
                 self.location_outbox = load["location_outbox"]
