@@ -57,11 +57,13 @@ class Jak3SecretData:
     secret_id: int
     location_id: int
     name: str
+    cost: int
 
-    def __init__(self, secret_id: int, location_id: int, name: str):
+    def __init__(self, secret_id: int, location_id: int, name: str, cost: int):
         self.secret_id = secret_id
         self.location_id = location_id
         self.name = name
+        self.cost = cost
 
 main_mission_table = {
     # Act 1
@@ -623,39 +625,39 @@ minigame_medal_table = {
 }
 
 secrets_table = {
-    1: Jak3SecretData(secret_id=1, location_id=50100, name="Secret - Increased Red Ammo Capacity"),
-    2: Jak3SecretData(secret_id=2, location_id=50101, name="Secret - Increased Yellow Ammo Capacity"),
-    3: Jak3SecretData(secret_id=3, location_id=50102, name="Secret - Increased Blue Ammo Capacity"),
-    4: Jak3SecretData(secret_id=4, location_id=50103, name="Secret - Increased Dark Ammo Capacity"),
-    5: Jak3SecretData(secret_id=5, location_id=50104, name="Secret - Blaster Damage Upgrade"),
-    6: Jak3SecretData(secret_id=6, location_id=50105, name="Secret - Scatter Gun Rate-of-Fire Upgrade"),
-    7: Jak3SecretData(secret_id=7, location_id=50106, name="Secret - Vulcan Fury Damage Upgrade"),
-    8: Jak3SecretData(secret_id=8, location_id=50107, name="Secret - Peace Maker Increased Radius"),
-    9: Jak3SecretData(secret_id=9, location_id=50108, name="Secret - Reflexor Increased Deflections"),
-    10: Jak3SecretData(secret_id=10, location_id=50109, name="Secret - Concussor Damage Upgrade"),
-    11: Jak3SecretData(secret_id=11, location_id=50110, name="Secret - Arc Wielder Robot Shock"),
-    12: Jak3SecretData(secret_id=12, location_id=50111, name="Secret - Mass Inverter Duration Upgrade"),
-    13: Jak3SecretData(secret_id=13, location_id=50112, name="Secret - Gyro Burster Duration Upgrade"),
-    14: Jak3SecretData(secret_id=14, location_id=50113, name="Secret - Plasmite RPG Ammo Efficiency"),
-    15: Jak3SecretData(secret_id=15, location_id=50114, name="Secret - Needle Lazer Ammo Efficiency"),
-    16: Jak3SecretData(secret_id=16, location_id=50115, name="Secret - Super Nova Ammo Efficiency"),
-    17: Jak3SecretData(secret_id=17, location_id=50116, name="Secret - Upgrade Vehicle Toughness"),
-    18: Jak3SecretData(secret_id=18, location_id=50117, name="Secret - Unlimited Vehicle Turbos"),
-    19: Jak3SecretData(secret_id=19, location_id=50118, name="Secret - Toggle Jak's Goatee"),
-    20: Jak3SecretData(secret_id=20, location_id=50119, name="Secret - Big Head Mode"),
-    21: Jak3SecretData(secret_id=21, location_id=50120, name="Secret - Small Head Mode"),
-    22: Jak3SecretData(secret_id=22, location_id=50121, name="Secret - Kleiver's Diaper"),
-    23: Jak3SecretData(secret_id=23, location_id=50122, name="Secret - Bad Weather"),
-    24: Jak3SecretData(secret_id=24, location_id=50123, name="Secret - Mirror World"),
-    25: Jak3SecretData(secret_id=25, location_id=50124, name="Secret - Fast Movies"),
-    26: Jak3SecretData(secret_id=26, location_id=50125, name="Secret - Slow Movies"),
-    27: Jak3SecretData(secret_id=27, location_id=50126, name="Secret - Turbo JetBoard in Desert"),
-    28: Jak3SecretData(secret_id=28, location_id=50127, name="Secret - Dark Jak Homing Attacks"),
-    29: Jak3SecretData(secret_id=29, location_id=50128, name="Secret - Dark Jak Invisibility on Triangle Button"),
-    30: Jak3SecretData(secret_id=30, location_id=50129, name="Secret - Unlimited Ammo"),
-    31: Jak3SecretData(secret_id=31, location_id=50130, name="Secret - Invulnerability"),
-    32: Jak3SecretData(secret_id=32, location_id=50131, name="Secret - Unlimited Dark Jak"),
-    33: Jak3SecretData(secret_id=33, location_id=50132, name="Secret - Unlimited Light Jak"),
+    1: Jak3SecretData(secret_id=1, location_id=50100, name="Secret - Increased Red Ammo Capacity", cost=4),
+    2: Jak3SecretData(secret_id=2, location_id=50101, name="Secret - Increased Yellow Ammo Capacity", cost=4),
+    3: Jak3SecretData(secret_id=3, location_id=50102, name="Secret - Increased Blue Ammo Capacity", cost=4),
+    4: Jak3SecretData(secret_id=4, location_id=50103, name="Secret - Increased Dark Ammo Capacity", cost=4),
+    5: Jak3SecretData(secret_id=5, location_id=50104, name="Secret - Blaster Damage Upgrade", cost=6),
+    6: Jak3SecretData(secret_id=6, location_id=50105, name="Secret - Scatter Gun Rate-of-Fire Upgrade", cost=6),
+    7: Jak3SecretData(secret_id=7, location_id=50106, name="Secret - Vulcan Fury Damage Upgrade", cost=6),
+    8: Jak3SecretData(secret_id=8, location_id=50107, name="Secret - Peace Maker Increased Radius", cost=6),
+    9: Jak3SecretData(secret_id=9, location_id=50108, name="Secret - Reflexor Increased Deflections", cost=8),
+    10: Jak3SecretData(secret_id=10, location_id=50109, name="Secret - Concussor Damage Upgrade", cost=8),
+    11: Jak3SecretData(secret_id=11, location_id=50110, name="Secret - Arc Wielder Robot Shock", cost=8),
+    12: Jak3SecretData(secret_id=12, location_id=50111, name="Secret - Mass Inverter Duration Upgrade", cost=8),
+    13: Jak3SecretData(secret_id=13, location_id=50112, name="Secret - Gyro Burster Duration Upgrade", cost=10),
+    14: Jak3SecretData(secret_id=14, location_id=50113, name="Secret - Plasmite RPG Ammo Efficiency", cost=10),
+    15: Jak3SecretData(secret_id=15, location_id=50114, name="Secret - Needle Lazer Ammo Efficiency", cost=10),
+    16: Jak3SecretData(secret_id=16, location_id=50115, name="Secret - Super Nova Ammo Efficiency", cost=10),
+    17: Jak3SecretData(secret_id=17, location_id=50116, name="Secret - Upgrade Vehicle Toughness", cost=15),
+    18: Jak3SecretData(secret_id=18, location_id=50117, name="Secret - Unlimited Vehicle Turbos", cost=30),
+    19: Jak3SecretData(secret_id=19, location_id=50118, name="Secret - Toggle Jak's Goatee", cost=2),
+    20: Jak3SecretData(secret_id=20, location_id=50119, name="Secret - Big Head Mode", cost=3),
+    21: Jak3SecretData(secret_id=21, location_id=50120, name="Secret - Small Head Mode", cost=3),
+    22: Jak3SecretData(secret_id=22, location_id=50121, name="Secret - Kleiver's Diaper", cost=4),
+    23: Jak3SecretData(secret_id=23, location_id=50122, name="Secret - Bad Weather", cost=5),
+    24: Jak3SecretData(secret_id=24, location_id=50123, name="Secret - Mirror World", cost=5),
+    25: Jak3SecretData(secret_id=25, location_id=50124, name="Secret - Fast Movies", cost=5),
+    26: Jak3SecretData(secret_id=26, location_id=50125, name="Secret - Slow Movies", cost=5),
+    27: Jak3SecretData(secret_id=27, location_id=50126, name="Secret - Turbo JetBoard in Desert", cost=5),
+    28: Jak3SecretData(secret_id=28, location_id=50127, name="Secret - Dark Jak Homing Attacks", cost=3),
+    29: Jak3SecretData(secret_id=29, location_id=50128, name="Secret - Dark Jak Invisibility on Triangle Button", cost=25),
+    30: Jak3SecretData(secret_id=30, location_id=50129, name="Secret - Unlimited Ammo", cost=50),
+    31: Jak3SecretData(secret_id=31, location_id=50130, name="Secret - Invulnerability", cost=100),
+    32: Jak3SecretData(secret_id=32, location_id=50131, name="Secret - Unlimited Dark Jak", cost=50),
+    33: Jak3SecretData(secret_id=33, location_id=50132, name="Secret - Unlimited Light Jak", cost=50),
 }
 
 secret_ids_to_secrets = {secret_id: secret for secret_id, secret in secrets_table.items()}

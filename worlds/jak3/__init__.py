@@ -1,5 +1,5 @@
 import settings
-from Options import OptionError, OptionGroup
+from Options import OptionError
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import components, Component, launch_subprocess, Type, icon_paths
 from BaseClasses import (Tutorial, ItemClassification as ItemClass)
@@ -16,9 +16,10 @@ from .locs.mission_locations import (get_all_mission_locations, get_location_id,
                                       get_dual_check_mission_locations, main_mission_table, side_mission_table,
                                       main_tasks_to_missions, DUAL_CHECK_SLOT_OFFSET,
                                       MAX_CHECKS_PER_MISSION, get_minigame_medal_locations, get_secret_locations,
-                                      get_orb_bundle_locations)
+                                      get_orb_bundle_locations, secrets_table)
 from .locations import (Jak3Location, all_locations_table)
 from .regs.region_base import Jak3Region
+from worlds.generic.Rules import CollectionRule
 
 
 TOTAL_ORBS = 600
@@ -239,9 +240,43 @@ It adds new weapons, devices and playable areas.
                     loc_id = get_location_id(mission_id, check)
                     mission_tree_region.add_jak_mission(loc_id, name, mission.rule)
 
-        # Secrets menu purchases — always active, no toggle, no access rule
-        for name, loc_id in get_secret_locations().items():
-            mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
+        # Secrets menu purchases — tiered by real orb cost so cheap secrets
+        # unlock early and expensive ones require more progress, avoiding
+        # "stuck in front of a secret you can't afford" soft-stalls.
+        secret_names_in_order = [
+            s.name for s in sorted(secrets_table.values(), key=lambda s: (s.cost, s.secret_id))
+        ]
+        secret_locations = get_secret_locations()
+        num_secrets = len(secret_names_in_order)
+
+        if self.options.orbsanity:
+            bundle_size = self.options.orbs_per_bundle.value
+            num_bundles = TOTAL_ORBS // bundle_size
+            bundle_item_name = self.orb_bundle_item_name
+
+            def make_bundle_rule(required: int, bundle_item_name: str) -> CollectionRule:
+                def rule(state, player):
+                    return state.count(bundle_item_name, player) >= required
+                return rule
+
+            for i, name in enumerate(secret_names_in_order, start=1):
+                loc_id = secret_locations[name]
+                required = max(1, round((i / num_secrets) * num_bundles))
+                mission_tree_region.add_jak_mission(loc_id, name, make_bundle_rule(required, bundle_item_name))
+        else:
+            gated_main_missions = [miss for miss in main_mission_table.values() if miss.has_rule]
+            num_gated_main_missions = len(gated_main_missions)
+
+            def make_mission_count_rule(required: int, gated_main_missions: list) -> CollectionRule:
+                def rule(state, player):
+                    completed = sum(1 for miss in gated_main_missions if miss.rule(state, player))
+                    return completed >= required
+                return rule
+
+            for i, name in enumerate(secret_names_in_order, start=1):
+                loc_id = secret_locations[name]
+                required = max(1, round((i / num_secrets) * num_gated_main_missions))
+                mission_tree_region.add_jak_mission(loc_id, name, make_mission_count_rule(required, gated_main_missions))
 
         # Orbsanity bundles — only active when the Orbsanity option is enabled
         if self.options.orbsanity:
