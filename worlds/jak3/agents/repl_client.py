@@ -146,9 +146,10 @@ class Jak3ReplClient:
 
 
         if len(self.item_inbox) > self.inbox_index:
-            await self.receive_item()
-            await self.save_data()
-            self.inbox_index += 1
+            ok = await self.receive_item()
+            if ok:
+                await self.save_data()
+                self.inbox_index += 1
 
 
         if self.received_deathlink:
@@ -434,17 +435,3 @@ class Jak3ReplClient:
     def load_data(self):
         self.inbox_index = 0
         self.item_inbox = {}
-        filename = f"jak3_item_inbox_{self.slot_seed}.json" if self.slot_seed else "jak3_item_inbox.json"
-        try:
-            with open(filename, "r") as f:
-                load = json.load(f)
-                self.inbox_index = load["inbox_index"]
-                self.item_inbox = {k: NetworkItem(
-                        item=load["item_inbox"][k]["item"],
-                        location=load["item_inbox"][k]["location"],
-                        player=load["item_inbox"][k]["player"],
-                        flags=load["item_inbox"][k]["flags"]
-                    ) for k in range(0, len(load["item_inbox"]))
-                }
-        except FileNotFoundError:
-            pass
