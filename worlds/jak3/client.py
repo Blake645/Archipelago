@@ -128,6 +128,16 @@ class Jak3Context(CommonContext):
         self.tags = set()
         await self.send_connect()
 
+    async def connect(self, address: str | None = None) -> None:
+        if not self.repl.connected or not self.memr.connected:
+            self.on_log_warn(logger, "Please wait for the Compiler and Memory Reader to connect to the game!")
+            return
+        await super(Jak3Context, self).connect(address)
+
+    async def disconnect(self, allow_autoreconnect: bool = False):
+        self.locations_checked = set()  # Clear this set to gracefully handle server disconnects.
+        await super(Jak3Context, self).disconnect(allow_autoreconnect)
+
     def on_package(self, cmd: str, args: dict):
 
         if cmd == "RoomInfo":

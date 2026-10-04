@@ -218,6 +218,16 @@ It adds new weapons, devices and playable areas.
     def create_regions(self) -> None:
         mission_tree_region = Jak3Region("Mission Tree", self.player, self.multiworld)
 
+        self._add_main_and_side_missions(mission_tree_region)
+        self._add_secrets(mission_tree_region)
+        self._add_orbsanity_bundles(mission_tree_region)
+        self._add_minigame_medals(mission_tree_region)
+
+        self.multiworld.regions.append(mission_tree_region)
+
+        self._set_completion_condition()
+
+    def _add_main_and_side_missions(self, mission_tree_region: Jak3Region) -> None:
         if self.options.location_check_mode == options.LocationCheckMode.option_dual_checks:
             for mission_id, mission in main_mission_table.items():
                 mission_tree_region.add_jak_mission(get_location_id(mission_id, DUAL_CHECK_SLOT_OFFSET), mission.name,
@@ -240,6 +250,7 @@ It adds new weapons, devices and playable areas.
                     loc_id = get_location_id(mission_id, check)
                     mission_tree_region.add_jak_mission(loc_id, name, mission.rule)
 
+    def _add_secrets(self, mission_tree_region: Jak3Region) -> None:
         # Secrets menu purchases — tiered by real orb cost so cheap secrets
         # unlock early and expensive ones require more progress, avoiding
         # "stuck in front of a secret you can't afford" soft-stalls.
@@ -278,6 +289,7 @@ It adds new weapons, devices and playable areas.
                 required = max(1, round((i / num_secrets) * num_gated_main_missions))
                 mission_tree_region.add_jak_mission(loc_id, name, make_mission_count_rule(required, gated_main_missions))
 
+    def _add_orbsanity_bundles(self, mission_tree_region: Jak3Region) -> None:
         # Orbsanity bundles — only active when the Orbsanity option is enabled
         if self.options.orbsanity:
             bundle_size = self.options.orbs_per_bundle.value
@@ -285,73 +297,75 @@ It adds new weapons, devices and playable areas.
             for name, loc_id in get_orb_bundle_locations(num_bundles).items():
                 mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
 
-        if self.options.minigame_medal_checks:
-            power_game_mission = main_mission_table[41]
-            gun_course_1_mission = main_mission_table[29]
-            gun_course_2_mission = main_mission_table[37]
-            pre_game_mission = main_mission_table[4]
-            gungame_mission = main_mission_table[13]
-            air_time_mission = side_mission_table[158]
-            total_air_time_mission = side_mission_table[159]
-            jump_distance_mission = side_mission_table[160]
-            total_jump_distance_mission = side_mission_table[161]
-            roll_count_mission = side_mission_table[162]
-            destroy_marauders_mission = side_mission_table[163]
-            jetboard_bbush_mission = side_mission_table[164]
-            time_trial_mission = side_mission_table[154]
-            rally_mission = side_mission_table[155]
+    def _add_minigame_medals(self, mission_tree_region: Jak3Region) -> None:
+        if not self.options.minigame_medal_checks:
+            return
 
-            medal_rules = {
-                "Daxter Pac-man Minigame - Bronze Medal": power_game_mission.rule,
-                "Daxter Pac-man Minigame - Silver Medal": power_game_mission.rule,
-                "Daxter Pac-man Minigame - Gold Medal": power_game_mission.rule,
-                "Blaster Gun Course - Bronze Medal": gun_course_1_mission.rule,
-                "Blaster Gun Course - Silver Medal": gun_course_1_mission.rule,
-                "Blaster Gun Course - Gold Medal": gun_course_1_mission.rule,
-                "Scatter Gun Course - Bronze Medal": gun_course_2_mission.rule,
-                "Scatter Gun Course - Silver Medal": gun_course_2_mission.rule,
-                "Scatter Gun Course - Gold Medal": gun_course_2_mission.rule,
-                "Satellite Minigame - Bronze Medal": pre_game_mission.rule,
-                "Satellite Minigame - Silver Medal": pre_game_mission.rule,
-                "Satellite Minigame - Gold Medal": pre_game_mission.rule,
-                "Gun Turret Minigame - Bronze Medal": gungame_mission.rule,
-                "Gun Turret Minigame - Silver Medal": gungame_mission.rule,
-                "Gun Turret Minigame - Gold Medal": gungame_mission.rule,
-                "Air Time Challenge (Desert) - Bronze Medal": air_time_mission.rule,
-                "Air Time Challenge (Desert) - Silver Medal": air_time_mission.rule,
-                "Air Time Challenge (Desert) - Gold Medal": air_time_mission.rule,
-                "Total Air Time Challenge (Desert) - Bronze Medal": total_air_time_mission.rule,
-                "Total Air Time Challenge (Desert) - Silver Medal": total_air_time_mission.rule,
-                "Total Air Time Challenge (Desert) - Gold Medal": total_air_time_mission.rule,
-                "Jump Distance Challenge (Desert) - Bronze Medal": jump_distance_mission.rule,
-                "Jump Distance Challenge (Desert) - Silver Medal": jump_distance_mission.rule,
-                "Jump Distance Challenge (Desert) - Gold Medal": jump_distance_mission.rule,
-                "Total Jump Distance Challenge (Desert) - Bronze Medal": total_jump_distance_mission.rule,
-                "Total Jump Distance Challenge (Desert) - Silver Medal": total_jump_distance_mission.rule,
-                "Total Jump Distance Challenge (Desert) - Gold Medal": total_jump_distance_mission.rule,
-                "Roll Count Challenge (Desert) - Bronze Medal": roll_count_mission.rule,
-                "Roll Count Challenge (Desert) - Silver Medal": roll_count_mission.rule,
-                "Roll Count Challenge (Desert) - Gold Medal": roll_count_mission.rule,
-                "Destroy Marauders Side Mission (Desert) - Bronze Medal": destroy_marauders_mission.rule,
-                "Destroy Marauders Side Mission (Desert) - Silver Medal": destroy_marauders_mission.rule,
-                "Destroy Marauders Side Mission (Desert) - Gold Medal": destroy_marauders_mission.rule,
-                "JET-Board Side Mission (Industrial Section A) - Bronze Medal": jetboard_bbush_mission.rule,
-                "JET-Board Side Mission (Industrial Section A) - Silver Medal": jetboard_bbush_mission.rule,
-                "JET-Board Side Mission (Industrial Section A) - Gold Medal": jetboard_bbush_mission.rule,
-                "Desert Time Trial - Bronze Medal": time_trial_mission.rule,
-                "Desert Time Trial - Silver Medal": time_trial_mission.rule,
-                "Desert Time Trial - Gold Medal": time_trial_mission.rule,
-                "Desert Rally Side Mission - Bronze Medal": rally_mission.rule,
-                "Desert Rally Side Mission - Silver Medal": rally_mission.rule,
-                "Desert Rally Side Mission - Gold Medal": rally_mission.rule,
-            }
+        power_game_mission = main_mission_table[41]
+        gun_course_1_mission = main_mission_table[29]
+        gun_course_2_mission = main_mission_table[37]
+        pre_game_mission = main_mission_table[4]
+        gungame_mission = main_mission_table[13]
+        air_time_mission = side_mission_table[158]
+        total_air_time_mission = side_mission_table[159]
+        jump_distance_mission = side_mission_table[160]
+        total_jump_distance_mission = side_mission_table[161]
+        roll_count_mission = side_mission_table[162]
+        destroy_marauders_mission = side_mission_table[163]
+        jetboard_bbush_mission = side_mission_table[164]
+        time_trial_mission = side_mission_table[154]
+        rally_mission = side_mission_table[155]
 
-            for name, loc_id in get_minigame_medal_locations(True).items():
-                rule = medal_rules.get(name, lambda state, player: True)
-                mission_tree_region.add_jak_mission(loc_id, name, rule)
+        medal_rules = {
+            "Daxter Pac-man Minigame - Bronze Medal": power_game_mission.rule,
+            "Daxter Pac-man Minigame - Silver Medal": power_game_mission.rule,
+            "Daxter Pac-man Minigame - Gold Medal": power_game_mission.rule,
+            "Blaster Gun Course - Bronze Medal": gun_course_1_mission.rule,
+            "Blaster Gun Course - Silver Medal": gun_course_1_mission.rule,
+            "Blaster Gun Course - Gold Medal": gun_course_1_mission.rule,
+            "Scatter Gun Course - Bronze Medal": gun_course_2_mission.rule,
+            "Scatter Gun Course - Silver Medal": gun_course_2_mission.rule,
+            "Scatter Gun Course - Gold Medal": gun_course_2_mission.rule,
+            "Satellite Minigame - Bronze Medal": pre_game_mission.rule,
+            "Satellite Minigame - Silver Medal": pre_game_mission.rule,
+            "Satellite Minigame - Gold Medal": pre_game_mission.rule,
+            "Gun Turret Minigame - Bronze Medal": gungame_mission.rule,
+            "Gun Turret Minigame - Silver Medal": gungame_mission.rule,
+            "Gun Turret Minigame - Gold Medal": gungame_mission.rule,
+            "Air Time Challenge (Desert) - Bronze Medal": air_time_mission.rule,
+            "Air Time Challenge (Desert) - Silver Medal": air_time_mission.rule,
+            "Air Time Challenge (Desert) - Gold Medal": air_time_mission.rule,
+            "Total Air Time Challenge (Desert) - Bronze Medal": total_air_time_mission.rule,
+            "Total Air Time Challenge (Desert) - Silver Medal": total_air_time_mission.rule,
+            "Total Air Time Challenge (Desert) - Gold Medal": total_air_time_mission.rule,
+            "Jump Distance Challenge (Desert) - Bronze Medal": jump_distance_mission.rule,
+            "Jump Distance Challenge (Desert) - Silver Medal": jump_distance_mission.rule,
+            "Jump Distance Challenge (Desert) - Gold Medal": jump_distance_mission.rule,
+            "Total Jump Distance Challenge (Desert) - Bronze Medal": total_jump_distance_mission.rule,
+            "Total Jump Distance Challenge (Desert) - Silver Medal": total_jump_distance_mission.rule,
+            "Total Jump Distance Challenge (Desert) - Gold Medal": total_jump_distance_mission.rule,
+            "Roll Count Challenge (Desert) - Bronze Medal": roll_count_mission.rule,
+            "Roll Count Challenge (Desert) - Silver Medal": roll_count_mission.rule,
+            "Roll Count Challenge (Desert) - Gold Medal": roll_count_mission.rule,
+            "Destroy Marauders Side Mission (Desert) - Bronze Medal": destroy_marauders_mission.rule,
+            "Destroy Marauders Side Mission (Desert) - Silver Medal": destroy_marauders_mission.rule,
+            "Destroy Marauders Side Mission (Desert) - Gold Medal": destroy_marauders_mission.rule,
+            "JET-Board Side Mission (Industrial Section A) - Bronze Medal": jetboard_bbush_mission.rule,
+            "JET-Board Side Mission (Industrial Section A) - Silver Medal": jetboard_bbush_mission.rule,
+            "JET-Board Side Mission (Industrial Section A) - Gold Medal": jetboard_bbush_mission.rule,
+            "Desert Time Trial - Bronze Medal": time_trial_mission.rule,
+            "Desert Time Trial - Silver Medal": time_trial_mission.rule,
+            "Desert Time Trial - Gold Medal": time_trial_mission.rule,
+            "Desert Rally Side Mission - Bronze Medal": rally_mission.rule,
+            "Desert Rally Side Mission - Silver Medal": rally_mission.rule,
+            "Desert Rally Side Mission - Gold Medal": rally_mission.rule,
+        }
 
-        self.multiworld.regions.append(mission_tree_region)
+        for name, loc_id in get_minigame_medal_locations(True).items():
+            rule = medal_rules.get(name, lambda state, player: True)
+            mission_tree_region.add_jak_mission(loc_id, name, rule)
 
+    def _set_completion_condition(self) -> None:
         if self.completion_type == options.CompletionCondition.option_complete_specific_mission:
             mission_id = self.completion_value
             mission = main_tasks_to_missions.get(mission_id)

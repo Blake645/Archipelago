@@ -50,6 +50,15 @@ orb_bundle_size_to_id = {
     size: ORBSANITY_ID + i for i, size in enumerate(orb_item_table.keys())
 }
 
+# Guard against future ID-range collisions
+assert SECRET_ID_END < ORBSANITY_ID, (
+    f"SECRET_ID_END ({SECRET_ID_END}) must be less than ORBSANITY_ID ({ORBSANITY_ID}) "
+    f"to avoid ID collisions with orb bundle items."
+)
+assert max(orb_bundle_size_to_id.values()) not in range(ITEM_ID_KEY_START, SECRET_ID_END + 1), (
+    "Orbsanity item IDs collide with an existing item ID range."
+)
+
 item_table = {
     # ========== KEY/PROGRESSION ITEMS (IDs 1-55) ==========
 

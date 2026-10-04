@@ -100,10 +100,10 @@ class Jak3ReplClient:
                 self.waiting_for_compile = False
                 self.log_info(logger, "[4/5] Set cheat mode to off...")
                 await asyncio.sleep(0.5)
-                await self.send_form_no_response("(set! *cheat-mode* #f)")
+                await self.send_form("(set! *cheat-mode* #f)", print_ok=False)
                 await asyncio.sleep(0.5)
                 self.log_info(logger, "[5/5] Run the title screen...")
-                await self.send_form_no_response("(start 'play (get-continue-by-name *game-info* \"title-start\"))")
+                await self.send_form("(start 'play (get-continue-by-name *game-info* \"title-start\"))")
                 self.log_success(logger, "The REPL is ready!")
                 self.connected = True
             return
@@ -141,7 +141,7 @@ class Jak3ReplClient:
         if not self.processed_initial_items:
             if self.inbox_index >= self.initial_item_count >= 0:
                 self.processed_initial_items = True
-                await self.send_form_no_response("(set! *ap-suppress-initial-talkers?* #f)")
+                await self.send_form("(set! *ap-suppress-initial-talkers?* #f)", print_ok=False)
                 await self.send_connection_status("ready")
 
 
@@ -160,14 +160,6 @@ class Jak3ReplClient:
             json_txt_data = self.json_message_queue.get_nowait()
             await self.write_game_text(json_txt_data)
 
-    async def send_form_no_response(self, form: str) -> bool:
-        """Send a form that doesn't return a response through the socket."""
-        header = struct.pack("<II", len(form), 10)
-        async with self.lock:
-            self.writer.write(header + form.encode())
-            await self.writer.drain()
-        return True
-
     async def send_form(self, form: str, print_ok: bool = True) -> bool:
         header = struct.pack("<II", len(form), 10)
         async with self.lock:
@@ -178,7 +170,7 @@ class Jak3ReplClient:
                 response_data = await asyncio.wait_for(self.reader.read(8192), timeout=120.0)
                 response = response_data.decode()
             except asyncio.TimeoutError:
-                self.log_error(logger, f"Timed out waiting for REPL response to: {form}")
+                self.log_error(logger, f"Timed out waiting for a response to: {form!r}")
                 return False
 
             if response and len(response.strip()) > 0:
@@ -186,7 +178,7 @@ class Jak3ReplClient:
                     logger.debug(response)
                 return True
             else:
-                self.log_error(logger, f"Unexpected response from REPL: {response}")
+                self.log_error(logger, f"Got empty/whitespace-only response for: {form!r}")
                 return False
 
     async def connect(self):
@@ -222,36 +214,35 @@ class Jak3ReplClient:
         if self.reader and self.writer:
             self.log_info(logger, "[1/5] Listen on the game's port...")
             await asyncio.sleep(0.5)
-            await self.send_form_no_response("(lt)")
-            await asyncio.sleep(3)
+            if not await self.send_form("(lt)", print_ok=False):
+                self.log_error(logger, "Failed to start listening on the game's port (lt).")
+                return
 
             self.log_info(logger, "[2/5] Set debug flag to on...")
             await asyncio.sleep(0.5)
-            await self.send_form_no_response("(set! *debug-segment* #t)")
+            if not await self.send_form("(set! *debug-segment* #t)", print_ok=False):
+                self.log_error(logger, "Failed to set debug flag.")
+                return
 
             self.log_info(logger, "[3/5] Compile the game...")
             await asyncio.sleep(0.5)
-            await self.send_form_no_response("(mi)")
-            self.log_info(logger, "Waiting for compilation to finish (this may take a minute)...")
-            self.waiting_for_compile = True
-            self.compile_ready_time = asyncio.get_event_loop().time() + 45
+            if not await self.send_form("(mi)", print_ok=False):
+                self.log_error(logger, "Failed to start compilation.")
+                return
 
-    async def print_status(self):
-        gc_proc_id = str(self.goalc_process.pid) if self.goalc_process else "None"
-        gk_proc_id = str(self.gk_process.pid) if self.gk_process else "None"
-        msg = (f"REPL Status:\n"
-               f"   REPL process ID: {gc_proc_id}\n"
-               f"   Game process ID: {gk_proc_id}\n")
-        try:
-            if self.reader and self.writer:
-                addr = self.writer.get_extra_info("peername")
-                addr = str(addr) if addr else "None"
-                msg += f"   Game websocket: {addr}\n"
-        except ConnectionResetError:
-            msg += f"   Connection to the game was lost or reset!"
-        last_item = str(getattr(self.item_inbox[self.inbox_index], "item")) if self.inbox_index and self.inbox_index < len(self.item_inbox) else "None"
-        msg += f"   Last item received: {last_item}\n"
-        self.log_info(logger, msg)
+            self.log_info(logger, "[4/5] Set cheat mode to off...")
+            await asyncio.sleep(0.5)
+            if not await self.send_form("(set! *cheat-mode* #f)", print_ok=False):
+                self.log_error(logger, "Failed to disable cheat mode.")
+                return
+
+            self.log_info(logger, "[5/5] Run the title screen...")
+            if not await self.send_form("(start 'play (get-continue-by-name *game-info* \"title-start\"))"):
+                self.log_error(logger, "Failed to run title screen.")
+                return
+
+            self.log_success(logger, "The REPL is ready!")
+            self.connected = True
 
     @staticmethod
     def sanitize_game_text(text: str) -> str:
@@ -302,7 +293,7 @@ class Jak3ReplClient:
                      f" {self.sanitize_game_text(data.their_item_name)} "
                      f" {self.sanitize_game_text(data.their_item_owner)} "
                      f" {'#t' if is_filler_theirs else '#f'})))")
-        await self.send_form_no_response(f"(begin {body} (none))")
+        await self.send_form(f"(begin {body} (none))", print_ok=False)
 
     async def receive_item(self):
         item_obj = self.item_inbox[self.inbox_index]
@@ -318,11 +309,11 @@ class Jak3ReplClient:
 
 
         if TRAP_ID_START <= item <= TRAP_ID_END:
-            ok = await self.send_form_no_response(f"(ap-trap-received! '{item_symbol})")
+            ok = await self.send_form(f"(ap-trap-received! '{item_symbol})", print_ok=False)
             logger.debug(f"Sent trap {item_name}!")
             return ok  # removed queue_game_text, handled by json_to_game_text now
 
-        ok = await self.send_form_no_response(f"(ap-item-received! '{item_symbol})")
+        ok = await self.send_form(f"(ap-item-received! '{item_symbol})", print_ok=False)
         if ok:
             logger.debug(f"Sent item {item_name}!")
         return ok
@@ -343,7 +334,7 @@ class Jak3ReplClient:
                        "'explode"]
         chosen_death = random.choice(death_types)
 
-        ok = await self.send_form_no_response(f"(ap-deathlink-received! {chosen_death})")
+        ok = await self.send_form(f"(ap-deathlink-received! {chosen_death})", print_ok=False)
         if ok:
             logger.debug(f"Received deathlink signal!")
         else:
@@ -376,21 +367,21 @@ class Jak3ReplClient:
         sanitized_name = self.sanitize_file_text(slot_name)
         sanitized_seed = self.sanitize_seed_text(slot_seed)
 
-        ok = await self.send_form_no_response(f"(ap-setup-options! (new 'static 'ap-seed-options "
-                                              f":slot-name {sanitized_name} "
-                                              f":slot-seed {sanitized_seed} "
-                                              f":trap-duration {trap_time}.0 "
-                                              f":completion-type {completion_type} "
-                                              f":completion-value {specific_mission_value} "
-                                              f":completion-mission-count {mission_count_value} "
-                                              f":jak-is-jak2 {jak_is_jak2} "
-                                              f":randomize-bbush {randomize_bbush} "
-                                              f":bbush-cost-get-to {bbush_cost_get_to}.0 "
-                                              f":bbush-cost-race {bbush_cost_race}.0 "
-                                              f":bbush-cost-other {bbush_cost_other}.0 "
-                                              f":minigame-medal-checks {minigame_medal_checks} "
-                                              f":orbsanity {orbsanity} "
-                                              f":orbs-per-bundle {orbs_per_bundle} ))")
+        ok = await self.send_form(f"(ap-setup-options! (new 'static 'ap-seed-options "
+                                  f":slot-name {sanitized_name} "
+                                  f":slot-seed {sanitized_seed} "
+                                  f":trap-duration {trap_time}.0 "
+                                  f":completion-type {completion_type} "
+                                  f":completion-value {specific_mission_value} "
+                                  f":completion-mission-count {mission_count_value} "
+                                  f":jak-is-jak2 {jak_is_jak2} "
+                                  f":randomize-bbush {randomize_bbush} "
+                                  f":bbush-cost-get-to {bbush_cost_get_to}.0 "
+                                  f":bbush-cost-race {bbush_cost_race}.0 "
+                                  f":bbush-cost-other {bbush_cost_other}.0 "
+                                  f":minigame-medal-checks {minigame_medal_checks} "
+                                  f":orbsanity {orbsanity} "
+                                  f":orbs-per-bundle {orbs_per_bundle} ))", print_ok=False)
         message = (f"Setting options: \n"
                    f"   Slot Name {sanitized_name}, \n"
                    f"   Slot Seed {sanitized_seed}, \n"
@@ -413,7 +404,7 @@ class Jak3ReplClient:
         return ok
 
     async def send_connection_status(self, status: str) -> bool:
-        ok = await self.send_form_no_response(f"(ap-set-connection-status! (ap-connection-status {status}))")
+        ok = await self.send_form(f"(ap-set-connection-status! (ap-connection-status {status}))", print_ok=False)
         logger.debug(f"Connection Status {status} sent!")
         return ok
 

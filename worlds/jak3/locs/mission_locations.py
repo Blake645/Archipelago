@@ -92,7 +92,7 @@ main_mission_table = {
                        state.has_all(("Gate Pass to Spargus", "Sand Shark"), player),
                        items_granted=["Dark Eco Crystal #2", "Sand Shark"]),
     10: Jak3MissionData(mission_id=10, task_id=19, name="Earn 2nd war amulet",
-                        items_granted=["Wave Consussor", "Second War Amulet", "Beam Reflexor"]),
+                        items_granted=["Wave Concussor", "War Amulet #2", "Beam Reflexor"]),
     11: Jak3MissionData(mission_id=11, task_id=20, name="Corral wild leapers",
                         rule=lambda state, player:
                         state.has_all(("Gate Pass to Spargus", "Sand Shark"), player),
@@ -135,13 +135,13 @@ main_mission_table = {
                         rule=lambda state, player:
                         spargus_to_desert(state, player)
                         and any_gun(state, player),
-                        items_granted=["Jetboard", "Seal of Mar"]),
+                        items_granted=["JET-Board", "Seal of Mar"]),
     21: Jak3MissionData(mission_id=21, task_id=30, name="Complete Monk Temple tests",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and state.has_all(("Seal of Mar", "JET-Board", "Light Jak", "Light Flash Freeze", "Dark Invisibility"), player)
                         and main_mission_table[19].rule(state, player),
-                        items_granted=["Light Freeze"]),
+                        items_granted=["Light Flash Freeze"]),
     22: Jak3MissionData(mission_id=22, task_id=31, name="Travel through catacomb subrails",
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
@@ -297,7 +297,7 @@ main_mission_table = {
                         rule=lambda state, player:
                         state.has_all(("War Amulet #1", "War Amulet #2", "Gun Turret"), player)
                         and main_mission_table[13].rule(state, player),
-                        items_granted=["Third War Amulet Piece", "Chest Armor"]),
+                        items_granted=["War Amulet #3", "Chest Armor"]),
     53: Jak3MissionData(mission_id=53, task_id=63, name="Activate Astro-Viewer in Haven Forest",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
@@ -314,7 +314,7 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_hq(state, player)
                         and state.has("Pass to Metal Head Section", player),
-                        items_granted=["Supernova"]),
+                        items_granted=["Super Nova"]),
     56: Jak3MissionData(mission_id=56, task_id=66, name="Destroy Metal Head tower",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
@@ -373,13 +373,13 @@ main_tasks_to_missions = {miss.task_id: miss for _, miss in main_mission_table.i
 
 side_mission_table = {
     # Orb Searches
-    101: Jak3SideMissionData(mission_id=101, task_id=73, name=" Desert Orb Search 1",
+    101: Jak3SideMissionData(mission_id=101, task_id=73, name="Desert Orb Search 1",
                              rule=lambda state, player:
                              spargus_to_desert(state, player)),
     102: Jak3SideMissionData(mission_id=102, task_id=74, name="Desert Orb Search 2",
                              rule=lambda state, player:
                              spargus_to_desert(state, player)),
-    103: Jak3SideMissionData(mission_id=103, task_id=75, name=" Desert Orb Search 3",
+    103: Jak3SideMissionData(mission_id=103, task_id=75, name="Desert Orb Search 3",
                              rule=lambda state, player:
                              spargus_to_desert(state, player)),
     104: Jak3SideMissionData(mission_id=104, task_id=76, name="Desert Orb Search 4",
@@ -597,7 +597,7 @@ minigame_medal_table = {
     15: Jak3MedalData(medal_id=15, location_id=50015, name="Gun Turret Minigame - Gold Medal"),
     16: Jak3MedalData(medal_id=16, location_id=50016, name="Air Time Challenge (Desert) - Bronze Medal"),
     17: Jak3MedalData(medal_id=17, location_id=50017, name="Air Time Challenge (Desert) - Silver Medal"),
-    18: Jak3MedalData(medal_id=18, location_id=50018, name="Air Time Challenge (Desert - Gold Medal"),
+    18: Jak3MedalData(medal_id=18, location_id=50018, name="Air Time Challenge (Desert) - Gold Medal"),
     19: Jak3MedalData(medal_id=19, location_id=50019, name="Total Air Time Challenge (Desert) - Bronze Medal"),
     20: Jak3MedalData(medal_id=20, location_id=50020, name="Total Air Time Challenge (Desert) - Silver Medal"),
     21: Jak3MedalData(medal_id=21, location_id=50021, name="Total Air Time Challenge (Desert) - Gold Medal"),
