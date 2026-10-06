@@ -29,7 +29,7 @@ from NetUtils import ClientStatus
 
 # Jak imports
 from .game_id import jak3_name, jak3_gk, jak3_goalc
-from .agents.memory_reader import Jak3MemoryReader, autopsy, open_process
+from .agents.memory_reader import Jak3MemoryReader, autopsy
 from .agents.repl_client import Jak3ReplClient
 from . import Jak3World
 from .options import CompletionCondition
@@ -154,6 +154,7 @@ class Jak3Context(CommonContext):
             mission_count_value = slot_data.get("number_of_missions_for_completion", 60)
             self.memr.checks_per_mission = slot_data["checks_per_mission"]
             self.memr.location_check_mode = slot_data.get("location_check_mode", 1)
+            self.memr.orb_bundle_count = slot_data.get("orb_bundle_count", 600)
 
             if not self.repl.received_initial_items and self.repl.initial_item_count < 0:
                 self.repl.initial_item_count = 0
@@ -408,14 +409,14 @@ async def run_game(ctx: Jak3Context):
 
     gk_running = False
     try:
-        open_process(jak3_gk)
+        OpenProcess(name=jak3_gk)
         gk_running = True
     except ProcessNotFoundError:
         ctx.on_log_warn(logger, "Game not running, attempting to start.")
 
     goalc_running = False
     try:
-        open_process(jak3_goalc)
+        OpenProcess(name=jak3_goalc)
         goalc_running = True
     except ProcessNotFoundError:
         ctx.on_log_warn(logger, "Compiler not running, attempting to start.")

@@ -19,6 +19,8 @@ from .locs.mission_locations import (get_all_mission_locations, get_location_id,
                                       get_orb_bundle_locations, secrets_table)
 from .locations import (Jak3Location, all_locations_table)
 from .regs.region_base import Jak3Region
+from .orb_logic import can_reach_orbs, total_logic_orbs
+from .rules import spargus_to_desert
 from worlds.generic.Rules import CollectionRule
 
 
@@ -117,6 +119,11 @@ It adds new weapons, devices and playable areas.
             self.orb_bundle_item_name = orb_item_table[bundle_size]
             self.orb_bundle_item_id = orb_bundle_size_to_id[bundle_size]
 
+    def _num_bundles(self) -> int:
+        # Only as many bundles as the orb logic can actually guarantee.
+        size = self.options.orbs_per_bundle.value
+        return min(TOTAL_ORBS, total_logic_orbs()) // size
+
     @staticmethod
     def item_data_helper(item: int) -> list[tuple[int, ItemClass, int]]:
         # count,num,classification
@@ -170,8 +177,7 @@ It adds new weapons, devices and playable areas.
                 items_made += count
 
         if self.options.orbsanity:
-            bundle_size = self.options.orbs_per_bundle.value
-            num_bundles = TOTAL_ORBS // bundle_size
+            num_bundles = self._num_bundles()
             self.multiworld.itempool += [
                 Jak3Item(self.orb_bundle_item_name, ItemClass.progression | ItemClass.useful,
                          self.orb_bundle_item_id, self.player)
@@ -214,6 +220,20 @@ It adds new weapons, devices and playable areas.
         filler_item_names = ["Dark Eco Pill", "Light Eco Pill", "Skull Gems", "Health Pack",
                              "Scatter Gun Ammo", "Blaster Ammo", "Vulcan Fury Ammo", "Peacemaker Ammo"]
         return self.random.choice(filler_item_names)
+
+    # The orb logic caches the reachable-orb count on the state. Any item change
+    # invalidates that cache.
+    def collect(self, state, item) -> bool:
+        change = super().collect(state, item)
+        if change:
+            state.prog_items[self.player]["Reachable Orbs Fresh"] = 0
+        return change
+
+    def remove(self, state, item) -> bool:
+        change = super().remove(state, item)
+        if change:
+            state.prog_items[self.player]["Reachable Orbs Fresh"] = 0
+        return change
 
     def create_regions(self) -> None:
         mission_tree_region = Jak3Region("Mission Tree", self.player, self.multiworld)
@@ -261,8 +281,7 @@ It adds new weapons, devices and playable areas.
         num_secrets = len(secret_names_in_order)
 
         if self.options.orbsanity:
-            bundle_size = self.options.orbs_per_bundle.value
-            num_bundles = TOTAL_ORBS // bundle_size
+            num_bundles = self._num_bundles()
             bundle_item_name = self.orb_bundle_item_name
 
             def make_bundle_rule(required: int, bundle_item_name: str) -> CollectionRule:
@@ -290,12 +309,17 @@ It adds new weapons, devices and playable areas.
                 mission_tree_region.add_jak_mission(loc_id, name, make_mission_count_rule(required, gated_main_missions))
 
     def _add_orbsanity_bundles(self, mission_tree_region: Jak3Region) -> None:
-        # Orbsanity bundles — only active when the Orbsanity option is enabled
+        # Orbsanity bundles — only active when the Orbsanity option is enabled.
+        # Bundle N needs N * bundle_size orbs, so it is only reachable once enough
+        # areas / missions are unlocked to contain that many orbs.
         if self.options.orbsanity:
             bundle_size = self.options.orbs_per_bundle.value
-            num_bundles = TOTAL_ORBS // bundle_size
-            for name, loc_id in get_orb_bundle_locations(num_bundles).items():
-                mission_tree_region.add_jak_mission(loc_id, name, lambda state, player: True)
+            num_bundles = self._num_bundles()
+            for i, (name, loc_id) in enumerate(get_orb_bundle_locations(num_bundles).items(), start=1):
+                needed = bundle_size * i
+                mission_tree_region.add_jak_mission(
+                    loc_id, name,
+                    lambda state, player, needed=needed: can_reach_orbs(state, player, needed))
 
     def _add_minigame_medals(self, mission_tree_region: Jak3Region) -> None:
         if not self.options.minigame_medal_checks:
@@ -304,7 +328,6 @@ It adds new weapons, devices and playable areas.
         power_game_mission = main_mission_table[41]
         gun_course_1_mission = main_mission_table[29]
         gun_course_2_mission = main_mission_table[37]
-        pre_game_mission = main_mission_table[4]
         gungame_mission = main_mission_table[13]
         air_time_mission = side_mission_table[158]
         total_air_time_mission = side_mission_table[159]
@@ -316,6 +339,9 @@ It adds new weapons, devices and playable areas.
         time_trial_mission = side_mission_table[154]
         rally_mission = side_mission_table[155]
 
+        # The Satellite minigame is located in the desert.
+        satellite_rule = lambda state, player: spargus_to_desert(state, player)
+
         medal_rules = {
             "Daxter Pac-man Minigame - Bronze Medal": power_game_mission.rule,
             "Daxter Pac-man Minigame - Silver Medal": power_game_mission.rule,
@@ -326,9 +352,9 @@ It adds new weapons, devices and playable areas.
             "Scatter Gun Course - Bronze Medal": gun_course_2_mission.rule,
             "Scatter Gun Course - Silver Medal": gun_course_2_mission.rule,
             "Scatter Gun Course - Gold Medal": gun_course_2_mission.rule,
-            "Satellite Minigame - Bronze Medal": pre_game_mission.rule,
-            "Satellite Minigame - Silver Medal": pre_game_mission.rule,
-            "Satellite Minigame - Gold Medal": pre_game_mission.rule,
+            "Satellite Minigame - Bronze Medal": satellite_rule,
+            "Satellite Minigame - Silver Medal": satellite_rule,
+            "Satellite Minigame - Gold Medal": satellite_rule,
             "Gun Turret Minigame - Bronze Medal": gungame_mission.rule,
             "Gun Turret Minigame - Silver Medal": gungame_mission.rule,
             "Gun Turret Minigame - Gold Medal": gungame_mission.rule,
@@ -407,4 +433,5 @@ It adds new weapons, devices and playable areas.
             "orbsanity",
             "orbs_per_bundle",
         )
+        options_dict["orb_bundle_count"] = self._num_bundles()
         return options_dict
