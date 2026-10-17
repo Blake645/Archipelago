@@ -218,7 +218,8 @@ main_mission_table = {
     36: Jak3MissionData(mission_id=36, task_id=46, name="Defend Port from attack",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and any_gun(state, player)),
+                        and any_gun(state, player)
+                        and main_mission_table[26].rule(state, player)),
     37: Jak3MissionData(mission_id=37, task_id=47, name="Beat gun course 2",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
