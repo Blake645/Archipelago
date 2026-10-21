@@ -223,7 +223,7 @@ main_mission_table = {
     37: Jak3MissionData(mission_id=37, task_id=47, name="Beat gun course 2",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and state.has_any(("Scatter Gun", "Wave Concussor"), player),
+                        and state.has("Wave Concussor", player),
                         items_granted=["Plasmite RPG"]),
     38: Jak3MissionData(mission_id=38, task_id=48, name="Break barrier with blast bot",
                         rule=lambda state, player:
