@@ -292,7 +292,8 @@ main_mission_table = {
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Dark Jak", "Dark Strike", "Light Jak", "Light Flight", "Dark Invisibility"), player),
+                        and state.has_all(("Dark Jak", "Dark Strike", "Light Jak", "Light Flight"), player)
+                        and main_mission_table[49].rule(state, player),
                         items_granted=["Time Map"]),
     52: Jak3MissionData(mission_id=52, task_id=62, name="Defend Spargus from attack",
                         rule=lambda state, player:
