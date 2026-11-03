@@ -172,12 +172,10 @@ main_mission_table = {
     27: Jak3MissionData(mission_id=27, task_id=37, name="Destroy incoming blast bots",
                         rule=lambda state, player:
                         spargus_to_port(state, player)
-                        and any_gun(state, player)
-                        and main_mission_table[26].rule(state, player)),
+                        and any_gun(state, player)),
     28: Jak3MissionData(mission_id=28, task_id=38, name="Destroy barrier with missile",
                         rule=lambda state, player:
-                        spargus_to_port(state, player)
-                        and main_mission_table[26].rule(state, player),
+                        spargus_to_port(state, player),
                         items_granted=["Pass to Industrial Section A"]),
     29: Jak3MissionData(mission_id=29, task_id=39, name="Beat gun course 1",
                         rule=lambda state, player:
@@ -186,8 +184,7 @@ main_mission_table = {
                         items_granted=["Gyro Burster"]),
     30: Jak3MissionData(mission_id=30, task_id=40, name="Destroy sniper cannons",
                         rule=lambda state, player:
-                        port_to_inda(state, player)
-                        and main_mission_table[26].rule(state, player)),
+                        port_to_inda(state, player)),
     31: Jak3MissionData(mission_id=31, task_id=41, name="Reach Metal Head area via sewer",
                         rule=lambda state, player:
                         port_to_inda(state, player)
@@ -196,8 +193,7 @@ main_mission_table = {
     32: Jak3MissionData(mission_id=32, task_id=42, name="Destroy dark eco tanks",
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
-                        and state.has("JET-Board", player)
-                        and main_mission_table[26].rule(state, player),
+                        and state.has("JET-Board", player),
                         items_granted=["Dark Strike", "Pass to Metal Head Section"]),
     33: Jak3MissionData(mission_id=33, task_id=43, name="Kill dark plants in forest",
                         rule=lambda state, player:
@@ -208,8 +204,7 @@ main_mission_table = {
                         rule=lambda state, player:
                         port_to_metal_head_section(state, player)
                         and any_gun(state, player)
-                        and state.has("Pass to Industrial Section A", player)
-                        and main_mission_table[26].rule(state, player),
+                        and state.has("Pass to Industrial Section A", player),
                         items_granted=["Pass to Industrial Section B", "Needle Lazer"]),
     35: Jak3MissionData(mission_id=35, task_id=45, name="Hijack eco vehicle",
                         rule=lambda state, player:
@@ -227,8 +222,7 @@ main_mission_table = {
                         items_granted=["Plasmite RPG"]),
     38: Jak3MissionData(mission_id=38, task_id=48, name="Break barrier with blast bot",
                         rule=lambda state, player:
-                        port_to_indb(state, player)
-                        and main_mission_table[26].rule(state, player),
+                        port_to_indb(state, player),
                         items_granted=["Pass to Slums/New Haven", "Peacemaker"]),
     39: Jak3MissionData(mission_id=39, task_id=49, name="Defend HQ from attack",
                         rule=lambda state, player:
@@ -292,8 +286,7 @@ main_mission_table = {
                         rule=lambda state, player:
                         spargus_to_monk_temple(state, player)
                         and any_gun(state, player)
-                        and state.has_all(("Dark Jak", "Dark Strike", "Light Jak", "Light Flight"), player)
-                        and main_mission_table[49].rule(state, player),
+                        and state.has_all(("Dark Jak", "Dark Strike", "Light Jak", "Light Flight"), player),
                         items_granted=["Time Map"]),
     52: Jak3MissionData(mission_id=52, task_id=62, name="Defend Spargus from attack",
                         rule=lambda state, player:
@@ -508,13 +501,11 @@ side_mission_table = {
     145: Jak3SideMissionData(mission_id=145, task_id=117, name="Ring Race #4 (Spargus)"),
     146: Jak3SideMissionData(mission_id=146, task_id=118, name="Ring Race #5 (Slums/New Haven Section)",
                              rule=lambda state, player:
-                             port_to_hq(state, player)
-                             and main_mission_table[26].rule(state, player)),
+                             port_to_hq(state, player)),
     147: Jak3SideMissionData(mission_id=147, task_id=119, name="Ring Race #6 (Industrial Section A)",
                              rule=lambda state, player:
                              port_to_indb(state, player)
-                             and state.has("JET-Board", player)
-                             and main_mission_table[26].rule(state, player)),
+                             and state.has("JET-Board", player)),
     ## Other Side Missions
     148: Jak3SideMissionData(mission_id=148, task_id=120, name="Destroy Egg Spiders (Desert)",
                              rule=lambda state, player:
@@ -526,8 +517,7 @@ side_mission_table = {
     150: Jak3SideMissionData(mission_id=150, task_id=122, name="Spirit Chase #2 (Spargus)"),
     151: Jak3SideMissionData(mission_id=151, task_id=123, name="Spirit Chase #1 (Slums/New Haven Section)",
                              rule=lambda state, player:
-                             port_to_hq(state, player)
-                             and main_mission_table[26].rule(state, player)),
+                             port_to_hq(state, player)),
     152: Jak3SideMissionData(mission_id=152, task_id=124, name="Chase Timer Challenge #1 (Desert)",
                              rule=lambda state, player:
                              spargus_to_desert(state, player)),
@@ -541,7 +531,6 @@ side_mission_table = {
     156: Jak3SideMissionData(mission_id=156, task_id=133, name="City Port Attack Side Mission",
                              rule=lambda state, player:
                              spargus_to_port(state, player)
-                             and main_mission_table[26].rule(state, player)
                              and main_mission_table[28].rule(state, player)),
     157: Jak3SideMissionData(mission_id=157, task_id=134, name="Desert Rescue Side Mission",
                              rule=lambda state, player:
