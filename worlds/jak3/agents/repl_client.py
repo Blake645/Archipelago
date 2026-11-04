@@ -266,6 +266,12 @@ class Jak3ReplClient:
         result = "".join([c if c in allowed_chars_no_extras else "" for c in text[:7]]).upper()
         return f"\"{result}\""
 
+    @staticmethod
+    def sanitize_hint_text(text: str, max_length: int) -> str:
+        allowed_chars_no_quote = ALLOWED_CHARACTERS - {"\""}
+        result = "".join([c if c in allowed_chars_no_quote else "?" for c in text[:max_length]])
+        return f"\"{result}\""
+
     def queue_game_text(self, my_item_name, my_item_finder, their_item_name, their_item_owner):
         self.json_message_queue.put(JsonMessageData(my_item_name, my_item_finder, their_item_name, their_item_owner))
 
@@ -405,6 +411,18 @@ class Jak3ReplClient:
             logger.debug(message + "Sent!")
         else:
             self.log_error(logger, message + "Failed!")
+        return ok
+
+    async def setup_secret_scouts(self, scouts: list[tuple[int, str, str]]) -> bool:
+        forms = [f"(ap-set-secret-scout! {secret_id} "
+                 f"{self.sanitize_hint_text(item_name, 40)} "
+                 f"{self.sanitize_hint_text(player_name, 16)})"
+                 for secret_id, item_name, player_name in scouts]
+        ok = await self.send_form(f"(begin {' '.join(forms)} (none))", print_ok=False)
+        if ok:
+            logger.debug(f"Sent {len(scouts)} secret hints!")
+        else:
+            self.log_error(logger, f"Failed to send {len(scouts)} secret hints!")
         return ok
 
     async def send_connection_status(self, status: str) -> bool:

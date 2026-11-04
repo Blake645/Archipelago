@@ -200,6 +200,16 @@ class Jak3Context(CommonContext):
                     slot_data.get("orbsanity", 0),
                     slot_data.get("orbs_per_bundle", 20)))
 
+            # Scout the secrets' AP locations so the secrets menu can show what each one sends.
+            # create_as_hint 0 = just look, don't create hints for anyone.
+            secret_locations = [loc for loc in range(50100, 50133) if loc in self.server_locations]
+            if secret_locations:
+                create_task_log_exception(self.send_msgs([{
+                    "cmd": "LocationScouts",
+                    "locations": secret_locations,
+                    "create_as_hint": 0,
+                }]))
+
             # Tell the server if Deathlink is enabled or disabled in the in-game options.
             # This allows us to "remember" the user's choice.
             self.on_deathlink_toggle()
@@ -213,6 +223,19 @@ class Jak3Context(CommonContext):
             for index, item in enumerate(args["items"], start=args["index"]):
                 logger.debug(f"index: {str(index)}, item: {str(item)}")
                 self.repl.item_inbox[index] = item
+
+        if cmd == "LocationInfo":
+            # Send each secret's scouted item (and its owner, if it isn't us) to the game's secrets menu.
+            scouts = []
+            for net_item in args["locations"]:
+                if not (50100 <= net_item.location <= 50132):
+                    continue
+                secret_id = net_item.location - 50100 + 1
+                item_name = self.item_names.lookup_in_slot(net_item.item, net_item.player)
+                player_name = "" if self.slot_concerns_self(net_item.player) else self.player_names[net_item.player]
+                scouts.append((secret_id, item_name, player_name))
+            if scouts:
+                create_task_log_exception(self.repl.setup_secret_scouts(scouts))
 
     async def json_to_game_text(self, args: dict):
         if "type" in args and args["type"] in {"ItemSend"}:
