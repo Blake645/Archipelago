@@ -14,6 +14,7 @@ import asyncio
 from asyncio import StreamReader, StreamWriter, Lock
 
 from NetUtils import NetworkItem
+from Utils import user_path
 from ..items import item_table, Jak3ItemData, TRAP_ID_START, TRAP_ID_END, ITEM_ID_FILLER_START, ITEM_ID_FILLER_END
 from ..game_id import jak3_gk, jak3_goalc
 
@@ -250,7 +251,7 @@ class Jak3ReplClient:
 
     @staticmethod
     def sanitize_game_text(text: str) -> str:
-        result = "".join([c if c in ALLOWED_CHARACTERS else "?" for c in text[:32]]).upper()
+        result = "".join([c if c in ALLOWED_CHARACTERS else "?" for c in text[:32]])
         result = result.replace("'", "\\c12")
         return f"\"{result}\""
 
@@ -431,9 +432,9 @@ class Jak3ReplClient:
         return ok
 
     async def save_data(self):
-        filename = f"jak3_item_inbox_{self.slot_seed}.json" if self.slot_seed else "jak3_item_inbox.json"
-        with open(filename, "w+") as f:
+        with open(user_path("jak3_item_inbox.json"), "w+") as f:
             dump = {
+                "slot_seed": self.slot_seed,
                 "inbox_index": self.inbox_index,
                 "item_inbox": [{
                     "item": self.item_inbox[k].item,
@@ -448,3 +449,21 @@ class Jak3ReplClient:
     def load_data(self):
         self.inbox_index = 0
         self.item_inbox = {}
+        try:
+            with open(user_path("jak3_item_inbox.json"), "r") as f:
+                load = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return
+
+        if load.get("slot_seed") != self.slot_seed:
+            logger.debug("Saved item inbox belongs to a different seed, starting fresh.")
+            return
+
+        self.inbox_index = load["inbox_index"]
+        self.item_inbox = {k: NetworkItem(
+                item=load["item_inbox"][k]["item"],
+                location=load["item_inbox"][k]["location"],
+                player=load["item_inbox"][k]["player"],
+                flags=load["item_inbox"][k]["flags"]
+            ) for k in range(0, len(load["item_inbox"]))
+        }
