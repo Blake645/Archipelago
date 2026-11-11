@@ -107,7 +107,8 @@ main_mission_table = {
                         items_granted=["Gun Turret", "Light Eco Crystal #2"]),
     14: Jak3MissionData(mission_id=14, task_id=23, name="Defeat marauders in arena",
                         rule=lambda state, player:
-                        any_gun(state, player),
+                        any_gun(state, player)
+                        and main_mission_table[10].rule(state, player),
                         items_granted=["Vulcan Fury"]),
     15: Jak3MissionData(mission_id=15, task_id=24, name="Destroy eggs in nest",
                         rule=lambda state, player:
