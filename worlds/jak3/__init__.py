@@ -108,6 +108,11 @@ It adds new weapons, devices and playable areas.
     # Universal Tracker: allow regenerating this world from slot data, no YAML needed.
     ut_can_gen_without_yaml = True
 
+    @staticmethod
+    def interpret_slot_data(slot_data: dict) -> dict:
+        # Universal Tracker: hand the seed's slot data back so generate_early can copy the real options.
+        return slot_data
+
     def generate_early(self) -> None:
         # Universal Tracker support: overwrite our options with the ones from the real seed's slot data.
         if hasattr(self.multiworld, "re_gen_passthrough"):
@@ -130,7 +135,6 @@ It adds new weapons, devices and playable areas.
             bundle_size = self.options.orbs_per_bundle.value
             self.orb_bundle_item_name = orb_item_table[bundle_size]
             self.orb_bundle_item_id = orb_bundle_size_to_id[bundle_size]
-
     def _num_bundles(self) -> int:
         # Only as many bundles as the orb logic can actually guarantee.
         size = self.options.orbs_per_bundle.value

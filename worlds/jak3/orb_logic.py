@@ -71,29 +71,29 @@ for _i in range(101, 142):                 # orb searches, 3 orbs each
     SIDE_MISSION_ORBS[_i] = 3
 for _i in (142, 143, 144, 145, 146, 147, 149, 150, 151, 152, 153):   # races, 10 each
     SIDE_MISSION_ORBS[_i] = 10
-for _i in (148, 156, 157, 164):            # unique missions + JET-Board game, 18 each
+for _i in (148, 156, 157):                 # unique missions, 18 each
     SIDE_MISSION_ORBS[_i] = 18
 
-# Minigame medals: 3 orbs x (bronze, silver, gold) = 9 orbs per minigame
+# Minigame medals: (label, orbs for bronze + silver + gold combined, access rule)
 MINIGAME_ORBS = []
 _MEDAL_MINIGAMES = [
-    ("Daxter Pac-man",                  _m(41)),
-    ("Blaster Gun Course",              _m(29)),
-    ("Scatter Gun Course",              _m(37)),
-    ("Satellite Minigame",              spargus_to_desert),   # the minigame is in the desert
-    ("Gun Turret Minigame",             _m(13)),
-    ("Air Time Challenge",              _s(158)),
-    ("Total Air Time Challenge",        _s(159)),
-    ("Jump Distance Challenge",         _s(160)),
-    ("Total Jump Distance Challenge",   _s(161)),
-    ("Roll Count Challenge",            _s(162)),
-    ("Destroy Marauders",               _s(163)),
-    ("JET-Board Side Mission (Ind. A)", _s(164)),
-    ("Desert Time Trial",               _s(154)),
-    ("Desert Rally",                    _s(155)),
+    ("Daxter Pac-man",                  9,  _m(41)),
+    ("Blaster Gun Course",              9,  _m(29)),
+    ("Scatter Gun Course",              9,  _m(37)),
+    ("Satellite Minigame",              9,  spargus_to_desert),   # the minigame is in the desert
+    ("Gun Turret Minigame",             9,  _m(13)),
+    ("Air Time Challenge",              9,  _s(158)),
+    ("Total Air Time Challenge",        9,  _s(159)),
+    ("Jump Distance Challenge",         9,  _s(160)),
+    ("Total Jump Distance Challenge",   9,  _s(161)),
+    ("Roll Count Challenge",            9,  _s(162)),
+    ("Destroy Marauders",               9,  _s(163)),
+    ("JET-Board Side Mission (Ind. A)", 18, _s(164)),    # 6 orbs per medal, checked in game
+    ("Desert Time Trial",               9,  _s(154)),
+    ("Desert Rally",                    9,  _s(155)),
 ]
-for _name, _rule in _MEDAL_MINIGAMES:
-    MINIGAME_ORBS.append((_name + " medals", 9, _rule))
+for _name, _count, _rule in _MEDAL_MINIGAMES:
+    MINIGAME_ORBS.append((_name + " medals", _count, _rule))
 
 for _sid, _count in SIDE_MISSION_ORBS.items():
     if _count > 0:
@@ -103,7 +103,7 @@ for _label, _count, _rule in MINIGAME_ORBS:
     if _count > 0:
         AREA_ORBS.append((_label, _count, _rule))
 
-ORB_SLACK = 1.0  # only trust 95% of the counted orbs (set to 1.0 for no margin)
+ORB_SLACK = 1.0  # fraction of counted orbs logic trusts (1.0 = no margin, 0.95 = keep a 5% buffer)
 
 
 def total_logic_orbs() -> int:
