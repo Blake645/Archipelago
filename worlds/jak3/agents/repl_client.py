@@ -435,6 +435,7 @@ class Jak3ReplClient:
         with open(user_path("jak3_item_inbox.json"), "w+") as f:
             dump = {
                 "slot_seed": self.slot_seed,
+                "gk_pid": self.gk_process.pid if self.gk_process else None,
                 "inbox_index": self.inbox_index,
                 "item_inbox": [{
                     "item": self.item_inbox[k].item,
@@ -449,14 +450,15 @@ class Jak3ReplClient:
     def load_data(self):
         self.inbox_index = 0
         self.item_inbox = {}
+        load = None
         try:
             with open(user_path("jak3_item_inbox.json"), "r") as f:
                 load = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return
 
-        if load.get("slot_seed") != self.slot_seed:
-            logger.debug("Saved item inbox belongs to a different seed, starting fresh.")
+        current_pid = self.gk_process.pid if self.gk_process else None
+        if load.get("slot_seed") != self.slot_seed or load.get("gk_pid") != current_pid:
             return
 
         self.inbox_index = load["inbox_index"]
